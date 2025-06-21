@@ -37,8 +37,7 @@ class DashboardController extends Controller
         $pengajuanTerbaru = Mitra::with('user')
             ->where('status', 'menunggu')
             ->latest()
-            ->take(5)
-            ->get();
+            ->paginate(6, ['*'], 'pengajuan_page');
 
         // Data untuk grafik pengajuan (1 bulan terakhir)
         $chartData = Mitra::select(
@@ -68,8 +67,7 @@ class DashboardController extends Controller
         // Laporan Terbaru
         $laporanTerbaru = Laporan::with(['mitra.user', 'pegawai'])
             ->latest()
-            ->take(5)
-            ->get();
+            ->paginate(5, ['*'], 'laporan_page');
 
         // Data untuk grafik laporan (7 hari terakhir)
         $laporanChartData = Laporan::select(

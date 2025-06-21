@@ -18,6 +18,8 @@ class Mitra extends Model
         'telepon',
         'luas_lahan',
         'jumlah_pohon',
+        'umur_pohon',
+        'tanggal_input_umur',
         'provinsi_id',
         'kabupaten_id',
         'kecamatan_id',
@@ -29,6 +31,10 @@ class Mitra extends Model
         'surat_tanah',
         'kontrak',
         'status'
+    ];
+
+    protected $casts = [
+        'tanggal_input_umur' => 'date',
     ];
 
     public function user()
@@ -60,4 +66,26 @@ class Mitra extends Model
     {
         return $this->belongsTo(Desa::class);
     }
-} 
+
+    /**
+     * Hitung umur pohon saat ini berdasarkan tanggal input pertama
+     */
+    public function getUmurPohonSekarangAttribute()
+    {
+        if (!$this->tanggal_input_umur || !$this->umur_pohon) {
+            return null;
+        }
+
+        $tanggalSekarang = now();
+        $selisihHari = $tanggalSekarang->diffInDays($this->tanggal_input_umur);
+        return $this->umur_pohon + $selisihHari;
+    }
+
+    /**
+     * Cek apakah umur pohon sudah diinput
+     */
+    public function isUmurPohonSet()
+    {
+        return !is_null($this->umur_pohon) && !is_null($this->tanggal_input_umur);
+    }
+}

@@ -55,20 +55,25 @@
                         TANI ALPUKAT SIDOREJO
                     </h2>
                     <p class="mb-6 leading-relaxed text-lg">
-                        Tani Alpukat Sidorejo (TAS) merupakan badan utama yang menjalankan sistem kemitraan dan pengelolaan
-                        budidaya alpukat secara terstandar dan berkelanjutan. Berpusat di Semboro Kulon, Semboro, Kecamatan
+                        Tani Alpukat Sidorejo (TAS) merupakan badan utama yang menjalankan sistem kemitraan dan
+                        pengelolaan
+                        budidaya alpukat secara terstandar dan berkelanjutan. Berpusat di Semboro Kulon, Semboro,
+                        Kecamatan
                         Semboro, Kabupaten Jember, Jawa Timur, TAS dipimpin oleh Bapak Makruf Mulyono yang berkomitmen
                         kuat dalam penerapan budidaya yang sehat dan ramah lingkungan.
                     </p>
                     <p class="mb-6 leading-relaxed text-lg">
-                        Seluruh kegiatan kemitraan TAS mengacu pada standar budidaya alpukat premium yang telah dikembangkan
+                        Seluruh kegiatan kemitraan TAS mengacu pada standar budidaya alpukat premium yang telah
+                        dikembangkan
                         secara sistematis. Setiap mitra yang tergabung wajib mengikuti panduan budidaya yang telah
                         ditetapkan demi menjaga kualitas dan keberlanjutan produksi.
                     </p>
                     <p class="mb-6 leading-relaxed text-lg">
                         Salah satu keunggulan sistem TAS adalah pengurangan signifikan penggunaan pupuk kimia, yang
-                        bertujuan untuk menghasilkan buah alpukat dengan kualitas tinggi. Pendekatan ini menjadikan daging
-                        buah tidak berair dan memiliki daya simpan lebih lama, sehingga sangat diminati oleh pasar premium.
+                        bertujuan untuk menghasilkan buah alpukat dengan kualitas tinggi. Pendekatan ini menjadikan
+                        daging
+                        buah tidak berair dan memiliki daya simpan lebih lama, sehingga sangat diminati oleh pasar
+                        premium.
                     </p>
                     <p class="leading-relaxed text-lg">
                         Bermitra dengan TAS berarti bukan hanya menanam, tetapi juga berproses bersama dalam ekosistem
@@ -79,7 +84,8 @@
 
                 <!-- Right content - Image and Quote -->
                 <div class="w-full lg:w-1/3 flex flex-col items-center justify-center relative" data-aos="zoom-in">
-                    <div class="relative w-80 h-80 md:w-96 md:h-96 rounded-full overflow-hidden bg-white shadow-lg mb-8">
+                    <div
+                        class="relative w-80 h-80 md:w-96 md:h-96 rounded-full overflow-hidden bg-white shadow-lg mb-8">
                         <img src="{{ asset('images/makruf.png') }}" alt="Makruf Mulyono"
                             class="w-full h-full object-cover object-center transform scale-110">
                     </div>

@@ -62,6 +62,17 @@
                         </div>
                         <span class="ml-3 text-gray-700">{{ $laporan->tanggal_laporan->format('d F Y') }}</span>
                     </div>
+
+                    @if($laporan->mitra->isUmurPohonSet())
+                    <div class="flex items-center">
+                        <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <span class="ml-3 text-gray-700">Umur: {{ round($laporan->mitra->umur_pohon_sekarang) }} hari</span>
+                    </div>
+                    @endif
                 </div>
 
                 <div class="text-sm text-gray-500">

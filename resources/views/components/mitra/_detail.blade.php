@@ -2,6 +2,10 @@
 
 @section('title', 'Detail Mitra')
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+@endpush
+
 @section('content')
     <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto">
@@ -394,7 +398,35 @@
                                     <option value="menunggu">Menunggu</option>
                                     <option value="disetujui">Disetujui</option>
                                     <option value="ditolak">Ditolak</option>
+                                    <option value="nonaktif">Nonaktif</option>
                                 </select>
+                            </div>
+                            <div id="penolakanFields" class="hidden space-y-4">
+                                <div>
+                                    <label for="alasan_penolakan" class="block text-sm font-medium text-gray-700">Alasan</label>
+                                    <select name="alasan_penolakan" id="alasan_penolakan"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                        <option value="">-- Pilih Alasan --</option>
+                                        <!-- Options for ditolak -->
+                                        <optgroup label="Alasan Penolakan" class="penolakan-options hidden">
+                                            <option value="Data tidak valid">Data tidak valid</option>
+                                            <option value="Dokumen tidak lengkap">Dokumen tidak lengkap</option>
+                                            <option value="Tidak memenuhi syarat">Tidak memenuhi syarat</option>
+                                        </optgroup>
+                                        <!-- Options for nonaktif -->
+                                        <optgroup label="Alasan Penonaktifan" class="nonaktif-options hidden">
+                                            <option value="Melanggar kontrak">Melanggar kontrak</option>
+                                            <option value="Mitra mengundurkan diri">Mitra mengundurkan diri</option>
+                                            <option value="Melakukan kesalahan">Melakukan kesalahan</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="deskripsi_penolakan" class="block text-sm font-medium text-gray-700">Deskripsi</label>
+                                    <textarea name="deskripsi_penolakan" id="deskripsi_penolakan" rows="3"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                        placeholder="Tuliskan deskripsi..."></textarea>
+                                </div>
                             </div>
                         </div>
                         <div class="mt-6 flex justify-end space-x-3">
@@ -402,12 +434,22 @@
                                 class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">
                                 Batal
                             </button>
-                            <button type="submit"
+                            <button type="submit" id="submitButton"
                                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 Simpan
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="flex flex-col items-center justify-center p-4">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                    <p class="text-lg font-medium text-gray-900 mb-2">Mengubah Status Mitra</p>
+                    <p class="text-sm text-gray-600 text-center">Mohon tunggu sebentar, sedang mengirim notifikasi email...</p>
                 </div>
             </div>
         </div>
@@ -589,19 +631,124 @@
                 const editForm = document.getElementById('editForm');
                 const editNamaLengkapInput = document.getElementById('edit_nama_lengkap');
                 const editStatusSelect = document.getElementById('edit_status');
+                const submitButton = document.getElementById('submitButton');
+                const loadingOverlay = document.getElementById('loadingOverlay');
 
                 window.openEditModal = function(id, nama, status) {
-                    console.log('Fungsi openEditModal dipanggil dengan ID:', id, ', Nama:', nama, ', Status:',
-                        status);
+                    // Jika status ditolak, tampilkan pesan dan jangan buka modal
+                    if (status === 'ditolak') {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Status Tidak Dapat Diubah',
+                            text: 'Status mitra yang sudah ditolak tidak dapat diubah lagi.',
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+
                     editForm.action = `/owner/mitra/${id}`;
                     editNamaLengkapInput.value = nama;
                     editStatusSelect.value = status;
+
+                    // Simpan status asli untuk referensi
+                    editStatusSelect.setAttribute('data-original-status', status);
+
+                    // Reset semua opsi ke enabled terlebih dahulu
+                    const allOptions = editStatusSelect.querySelectorAll('option');
+                    allOptions.forEach(option => {
+                        option.disabled = false;
+                    });
+
+                    // Logika validasi berdasarkan status saat ini
+                    if (status === 'menunggu') {
+                        // Menunggu hanya bisa ke disetujui dan ditolak
+                        editStatusSelect.querySelector('option[value="nonaktif"]').disabled = true;
+                    } else if (status === 'disetujui') {
+                        // Disetujui hanya bisa ke nonaktif
+                        editStatusSelect.querySelector('option[value="menunggu"]').disabled = true;
+                        editStatusSelect.querySelector('option[value="ditolak"]').disabled = true;
+                    } else if (status === 'nonaktif') {
+                        // Nonaktif hanya bisa ke disetujui
+                        editStatusSelect.querySelector('option[value="menunggu"]').disabled = true;
+                        editStatusSelect.querySelector('option[value="ditolak"]').disabled = true;
+                    }
+
+                    // Toggle penolakan fields based on current status
+                    togglePenolakanFields(status);
+
                     editModal.classList.remove('hidden');
                 };
 
+                // Toggle field penolakan jika status = ditolak atau nonaktif
+                function togglePenolakanFields(status) {
+                    const penolakanFields = document.getElementById('penolakanFields');
+                    const penolakanOptions = document.querySelector('.penolakan-options');
+                    const nonaktifOptions = document.querySelector('.nonaktif-options');
+                    const alasanSelect = document.getElementById('alasan_penolakan');
+                    const deskripsiTextarea = document.getElementById('deskripsi_penolakan');
+
+                    if (status === 'ditolak' || status === 'nonaktif') {
+                        penolakanFields.classList.remove('hidden');
+
+                        // Reset dan sembunyikan semua optgroup
+                        penolakanOptions.classList.add('hidden');
+                        nonaktifOptions.classList.add('hidden');
+
+                        // Tampilkan optgroup yang sesuai
+                        if (status === 'ditolak') {
+                            penolakanOptions.classList.remove('hidden');
+                            document.querySelector('label[for="alasan_penolakan"]').textContent = 'Alasan Penolakan';
+                            document.querySelector('label[for="deskripsi_penolakan"]').textContent = 'Deskripsi Penolakan';
+                            deskripsiTextarea.placeholder = 'Tuliskan deskripsi penolakan...';
+                        } else {
+                            nonaktifOptions.classList.remove('hidden');
+                            document.querySelector('label[for="alasan_penolakan"]').textContent = 'Alasan Penonaktifan';
+                            document.querySelector('label[for="deskripsi_penolakan"]').textContent = 'Deskripsi Penonaktifan';
+                            deskripsiTextarea.placeholder = 'Tuliskan deskripsi penonaktifan...';
+                        }
+
+                        // Reset nilai select dan textarea
+                        alasanSelect.value = '';
+                        deskripsiTextarea.value = '';
+                    } else {
+                        penolakanFields.classList.add('hidden');
+                        alasanSelect.value = '';
+                        deskripsiTextarea.value = '';
+                    }
+                }
+
+                editStatusSelect.addEventListener('change', function () {
+                    const currentStatus = this.value;
+                    const originalStatus = this.getAttribute('data-original-status');
+
+                    // Reset semua opsi ke enabled terlebih dahulu
+                    const allOptions = this.querySelectorAll('option');
+                    allOptions.forEach(option => {
+                        option.disabled = false;
+                    });
+
+                    // Logika validasi berdasarkan status yang dipilih
+                    if (currentStatus === 'menunggu') {
+                        // Jika pilih menunggu, disable nonaktif
+                        this.querySelector('option[value="nonaktif"]').disabled = true;
+                    } else if (currentStatus === 'disetujui') {
+                        // Jika pilih disetujui, disable menunggu dan ditolak
+                        this.querySelector('option[value="menunggu"]').disabled = true;
+                        this.querySelector('option[value="ditolak"]').disabled = true;
+                    } else if (currentStatus === 'nonaktif') {
+                        // Jika pilih nonaktif, disable menunggu dan ditolak
+                        this.querySelector('option[value="menunggu"]').disabled = true;
+                        this.querySelector('option[value="ditolak"]').disabled = true;
+                    }
+
+                    togglePenolakanFields(currentStatus);
+                });
+
                 window.closeEditModal = function() {
                     editModal.classList.add('hidden');
-                    console.log('Modal edit status ditutup.');
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = 'Simpan';
+                    loadingOverlay.classList.add('hidden');
                 };
 
                 editModal.addEventListener('click', function(e) {
@@ -612,9 +759,82 @@
 
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape' && !editModal.classList.contains('hidden')) {
-                        editModal.classList.add('hidden');
-                        console.log('Modal edit status ditutup via Escape.');
+                        closeEditModal();
                     }
+                });
+
+                editForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const form = this;
+                    const formData = new FormData(form);
+                    const status = formData.get('status');
+
+                    // Validasi tambahan untuk status ditolak dan nonaktif
+                    if (status === 'ditolak' || status === 'nonaktif') {
+                        const alasan = formData.get('alasan_penolakan');
+                        const deskripsi = formData.get('deskripsi_penolakan');
+
+                        if (!alasan || !deskripsi.trim()) {
+                            const label = status === 'ditolak' ? 'penolakan' : 'penonaktifan';
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Validasi Gagal',
+                                text: `Alasan dan deskripsi ${label} wajib diisi.`,
+                            });
+                            return;
+                        }
+                    }
+
+                    // Disable submit button dan tampilkan loading
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = `
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Menyimpan...`;
+                    loadingOverlay.classList.remove('hidden');
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            closeEditModal();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Status mitra berhasil diperbarui',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: data.message || 'Terjadi kesalahan saat memperbarui status mitra'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Terjadi kesalahan saat memperbarui status mitra'
+                        });
+                    })
+                    .finally(() => {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = 'Simpan';
+                        loadingOverlay.classList.add('hidden');
+                    });
                 });
             @endif
         });
@@ -701,4 +921,8 @@
             }
         });
     </script>
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    @endpush
 @endsection

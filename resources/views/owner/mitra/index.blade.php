@@ -296,6 +296,17 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     <script>
         function openEditModal(id, nama, status) {
+            // Jika status ditolak, tampilkan pesan dan jangan buka modal
+            if (status === 'ditolak') {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Status Tidak Dapat Diubah',
+                    text: 'Status mitra yang sudah ditolak tidak dapat diubah lagi.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
             const modal = document.getElementById('editModal');
             const form = document.getElementById('editForm');
             const statusSelect = document.getElementById('edit_status');
@@ -307,12 +318,27 @@
             document.getElementById('edit_nama_lengkap').value = nama;
             statusSelect.value = status;
 
-            // Disable nonaktif option if status is not disetujui
-            const nonaktifOption = statusSelect.querySelector('option[value="nonaktif"]');
-            if (status !== 'disetujui') {
-                nonaktifOption.disabled = true;
-            } else {
-                nonaktifOption.disabled = false;
+            // Simpan status asli untuk referensi
+            statusSelect.setAttribute('data-original-status', status);
+
+            // Reset semua opsi ke enabled terlebih dahulu
+            const allOptions = statusSelect.querySelectorAll('option');
+            allOptions.forEach(option => {
+                option.disabled = false;
+            });
+
+            // Logika validasi berdasarkan status saat ini
+            if (status === 'menunggu') {
+                // Menunggu hanya bisa ke disetujui dan ditolak
+                statusSelect.querySelector('option[value="nonaktif"]').disabled = true;
+            } else if (status === 'disetujui') {
+                // Disetujui hanya bisa ke nonaktif
+                statusSelect.querySelector('option[value="menunggu"]').disabled = true;
+                statusSelect.querySelector('option[value="ditolak"]').disabled = true;
+            } else if (status === 'nonaktif') {
+                // Nonaktif hanya bisa ke disetujui
+                statusSelect.querySelector('option[value="menunggu"]').disabled = true;
+                statusSelect.querySelector('option[value="ditolak"]').disabled = true;
             }
 
             // Toggle penolakan fields based on current status
@@ -381,7 +407,30 @@
         }
 
         document.getElementById('edit_status').addEventListener('change', function () {
-            togglePenolakanFields(this.value);
+            const currentStatus = this.value;
+            const originalStatus = this.getAttribute('data-original-status');
+
+            // Reset semua opsi ke enabled terlebih dahulu
+            const allOptions = this.querySelectorAll('option');
+            allOptions.forEach(option => {
+                option.disabled = false;
+            });
+
+            // Logika validasi berdasarkan status yang dipilih
+            if (currentStatus === 'menunggu') {
+                // Jika pilih menunggu, disable nonaktif
+                this.querySelector('option[value="nonaktif"]').disabled = true;
+            } else if (currentStatus === 'disetujui') {
+                // Jika pilih disetujui, disable menunggu dan ditolak
+                this.querySelector('option[value="menunggu"]').disabled = true;
+                this.querySelector('option[value="ditolak"]').disabled = true;
+            } else if (currentStatus === 'nonaktif') {
+                // Jika pilih nonaktif, disable menunggu dan ditolak
+                this.querySelector('option[value="menunggu"]').disabled = true;
+                this.querySelector('option[value="ditolak"]').disabled = true;
+            }
+
+            togglePenolakanFields(currentStatus);
         });
 
         // Handle form submission

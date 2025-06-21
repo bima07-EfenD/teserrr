@@ -33,7 +33,7 @@ class LaporanController extends Controller
             $selectedMitra = Mitra::findOrFail($request->mitra_id);
         }
 
-        $laporans = $query->latest()->paginate(10);
+        $laporans = $query->latest()->paginate(6);
         $mitras = Mitra::where('status', 'disetujui')->get();
 
         return view('owner.laporan.index', compact('laporans', 'mitras', 'selectedMitra'));
@@ -52,7 +52,7 @@ class LaporanController extends Controller
             'mitra_id' => 'required|exists:mitras,id',
             'judul' => 'required|string|max:255',
             'tanggal_laporan' => 'required|date',
-            'keterangan' => 'required|string',
+            'keterangan' => ['required', 'string', 'not_regex:/<.*?>/'],
             'metode' => 'required|string|in:Vegetatif,Generatif',
             'template' => 'nullable|string|max:100',
             'kegiatan_lainnya' => 'nullable|string|max:255',
@@ -60,6 +60,8 @@ class LaporanController extends Controller
             'berat_rata_rata' => 'nullable|numeric|min:0',
             'media_foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'media_video' => 'nullable|mimes:mp4,mov,avi|max:10240'
+        ], [
+            'keterangan.not_regex' => 'Keterangan tidak boleh mengandung tag HTML.',
         ]);
 
         $data = $request->only([
@@ -126,7 +128,7 @@ class LaporanController extends Controller
             })
             ->latest();
 
-        $laporans = $query->paginate(10);
+        $laporans = $query->paginate(6);
 
         $html = view('owner.laporan._laporan_list', compact('laporans'))->render();
         $pagination = view('owner.laporan._pagination', compact('laporans'))->render();
@@ -188,8 +190,14 @@ class LaporanController extends Controller
                   ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_laporan', $request->bulan);
+        }
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_laporan', $request->tahun);
+        }
 
-        $laporans = $query->latest()->paginate(10);
+        $laporans = $query->latest()->paginate(6);
 
         // Untuk filter/pencarian AJAX
         if ($request->ajax()) {

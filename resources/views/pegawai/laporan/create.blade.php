@@ -41,6 +41,80 @@
 
         <!-- Form Card -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <!-- Alert Card untuk Mitra dengan 0 Pohon -->
+            @if(($selectedMitra->jumlah_pohon ?? $selectedMitra->pohon ?? 0) == 0)
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">
+                            Lahan Memiliki 0 Pohon
+                        </h3>
+                        <div class="mt-2 text-sm text-yellow-700">
+                            <p><strong>Prioritas Pertama:</strong> Karena lahan belum memiliki pohon, Anda harus:</p>
+                            <ul class="list-disc list-inside mt-1 space-y-1">
+                                <li>Metode otomatis <strong>Vegetatif</strong></li>
+                                <li>Kegiatan otomatis <strong>Pembibitan</strong></li>
+                                <li>Input <strong>Jumlah Pembibitan</strong> untuk menambah pohon di lahan</li>
+                                <li>Setelah input pembibitan, jumlah pohon akan otomatis terupdate</li>
+                            </ul>
+                            <p class="mt-2 font-medium">Setelah ada pohon, Anda dapat melanjutkan ke input umur pohon.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Alert Card untuk Umur Pohon Belum Diinput -->
+            @if(($selectedMitra->jumlah_pohon ?? $selectedMitra->pohon ?? 0) > 0 && !$selectedMitra->isUmurPohonSet())
+            <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            Umur Pohon Belum Diinput
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <p><strong>Prioritas Kedua:</strong> Karena umur pohon belum diinput, Anda hanya dapat:</p>
+                            <ul class="list-disc list-inside mt-1 space-y-1">
+                                <li>Memilih metode <strong>Vegetatif</strong> saja</li>
+                                <li>Melakukan kegiatan <strong>Input Umur Pohon</strong> terlebih dahulu (1-730 hari)</li>
+                                <li><strong>Kegiatan vegetatif lainnya tidak tersedia</strong> sampai umur pohon diinput</li>
+                                <li>Setelah umur pohon diinput, semua kegiatan akan tersedia</li>
+                            </ul>
+                            <p class="mt-2 font-medium">Metode Generatif dan kegiatan pemeliharaan lainnya akan tersedia setelah umur pohon diinput.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Info Card untuk Umur Pohon Sudah Diinput -->
+            @if($selectedMitra->isUmurPohonSet())
+            <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-green-800">
+                            Umur Pohon: {{ round($selectedMitra->umur_pohon_sekarang) }} hari
+                        </h3>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <form action="{{ route('pegawai.laporan.store') }}" method="POST" enctype="multipart/form-data" class="p-8">
                 @csrf
                 <input type="hidden" name="mitra_id" value="{{ $selectedMitra->id }}">
@@ -84,9 +158,10 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </div>
-                                    <input type="date" name="tanggal_laporan" id="tanggal_laporan" value="{{ old('tanggal_laporan', date('Y-m-d')) }}"
-                                        class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition" required>
+                                    <input type="date" name="tanggal_laporan" id="tanggal_laporan" value="{{ date('Y-m-d') }}"
+                                        class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-100 focus:bg-gray-100 focus:border-gray-300 focus:ring-gray-200 focus:ring-2 transition cursor-not-allowed" readonly>
                                 </div>
+                                <p class="mt-1 text-sm text-gray-500">Tanggal laporan otomatis diset ke hari ini</p>
                                 @error('tanggal_laporan')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -104,7 +179,10 @@
                                         class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition" required>
                                         <option value="" disabled selected>Pilih metode</option>
                                         <option value="Vegetatif" {{ old('metode') == 'Vegetatif' ? 'selected' : '' }}>Vegetatif</option>
-                                        <option value="Generatif" {{ old('metode') == 'Generatif' ? 'selected' : '' }}>Generatif</option>
+                                        <option value="Generatif" {{ old('metode') == 'Generatif' ? 'selected' : '' }}
+                                            @if(($selectedMitra->jumlah_pohon ?? $selectedMitra->pohon ?? 0) == 0 || (($selectedMitra->jumlah_pohon ?? $selectedMitra->pohon ?? 0) > 0 && !$selectedMitra->isUmurPohonSet())) disabled @endif>
+                                            Generatif
+                                        </option>
                                     </select>
                                 </div>
                                 @error('metode')
@@ -125,6 +203,9 @@
                                         <option value="" disabled selected>Pilih kegiatan</option>
                                     </select>
                                 </div>
+                                @error('template')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div id="custom-template-container" class="hidden">
@@ -169,6 +250,46 @@
                                                 placeholder="Masukkan berat rata-rata alpukat dalam kg">
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div id="umur-pohon-container" class="hidden">
+                                <div class="flex flex-col">
+                                    <label for="umur_pohon_input" class="block text-sm font-medium text-gray-700 mb-2">Umur Pohon (hari)</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <input type="number" name="umur_pohon_input" id="umur_pohon_input" value="{{ old('umur_pohon_input') }}" min="1" max="730"
+                                            class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition h-12"
+                                            placeholder="Masukkan umur pohon dalam hari">
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">Masukkan umur pohon alpukat dalam hari (1-730 hari) untuk perhitungan otomatis selanjutnya.</p>
+                                    @error('umur_pohon_input')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div id="jumlah-pembibitan-container" class="hidden">
+                                <div class="flex flex-col">
+                                    <label for="jumlah_pembibitan" class="block text-sm font-medium text-gray-700 mb-2">Jumlah Pembibitan</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                            </svg>
+                                        </div>
+                                        <input type="number" name="jumlah_pembibitan" id="jumlah_pembibitan" value="{{ old('jumlah_pembibitan') }}" min="1"
+                                            class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition h-12"
+                                            placeholder="Masukkan jumlah pembibitan">
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">Jumlah pembibitan akan otomatis menambah jumlah pohon di lahan mitra.</p>
+                                    @error('jumlah_pembibitan')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -484,17 +605,38 @@
         const judulInput = document.getElementById('judul');
 
         const vegetatifTemplates = [
-            'Pemupukan',
-            'Penyiraman',
-            'Pemangkasan',
-            'Pengendalian Hama',
+            'Pembibitan',
+            'Sambung pucuk (grafting)',
+            'Okulasi',
+            'Stek batang',
+            'Kegiatan Lainnya'
+        ];
+
+        const vegetatifTemplatesWithUmurPohon = [
+            'Input Umur Pohon',
+            'Pembibitan',
+            'Sambung pucuk (grafting)',
+            'Okulasi',
+            'Stek batang',
             'Kegiatan Lainnya'
         ];
 
         const generatifTemplates = [
+            'Pemangkasan',
+            'Pemupukan',
+            'Pengairan rutin',
+            'Pengendalian hama/penyakit',
+            'Penjarangan buah',
             'Panen Buah',
-            'Pembibitan',
-            'Persiapan Lahan',
+            'Kegiatan Lainnya'
+        ];
+
+        const generatifTemplatesWithoutPanen = [
+            'Pemangkasan',
+            'Pemupukan',
+            'Pengairan rutin',
+            'Pengendalian hama/penyakit',
+            'Penjarangan buah',
             'Kegiatan Lainnya'
         ];
 
@@ -503,21 +645,94 @@
             templateContainer.classList.remove('hidden');
             customTemplateContainer.classList.add('hidden');
             harvestAmountContainer.classList.add('hidden');
+            document.getElementById('umur-pohon-container').classList.add('hidden');
+            document.getElementById('jumlah-pembibitan-container').classList.add('hidden');
 
             // Clear and update template options
             templateSelect.innerHTML = '<option value="" disabled selected>Pilih kegiatan</option>';
 
-            const templates = selectedMethod === 'Vegetatif' ? vegetatifTemplates : generatifTemplates;
-            templates.forEach(template => {
+            // Pilih template berdasarkan kondisi umur pohon
+            const templates = selectedMethod === 'Vegetatif' ?
+                (mitraUmurPohonSet ? vegetatifTemplates : vegetatifTemplatesWithUmurPohon) :
+                (mitraUmurPohonSet && {{ round($selectedMitra->umur_pohon_sekarang ?? 0) }} >= 300 ? generatifTemplates : generatifTemplatesWithoutPanen);
+
+            // VALIDASI UTAMA: Jumlah pohon mengalahkan umur pohon
+            if (mitraJumlahPohon === 0) {
+                // Jika jumlah pohon 0, otomatis metode vegetatif dan kegiatan pembibitan
+                metodeSelect.value = 'Vegetatif';
+                // Disable opsi generatif
+                const generatifOption = metodeSelect.querySelector('option[value="Generatif"]');
+                if (generatifOption) {
+                    generatifOption.disabled = true;
+                }
+                // Tampilkan template container dan isi HANYA dengan Pembibitan
+                templateContainer.classList.remove('hidden');
+                templateSelect.innerHTML = '<option value="" disabled selected>Pilih kegiatan</option>';
                 const option = document.createElement('option');
-                option.value = template;
-                option.textContent = template;
+                option.value = 'Pembibitan';
+                option.textContent = 'Pembibitan';
                 templateSelect.appendChild(option);
-            });
+                setTimeout(() => {
+                    templateSelect.value = 'Pembibitan';
+                    document.getElementById('jumlah-pembibitan-container').classList.remove('hidden');
+                    document.getElementById('jumlah_pembibitan').setAttribute('required', 'required');
+                }, 100);
+            } else if (!mitraUmurPohonSet) {
+                // Jika jumlah pohon > 0 tapi umur pohon belum diinput, hanya boleh input umur pohon
+                metodeSelect.value = 'Vegetatif';
+                // Disable opsi generatif
+                const generatifOption = metodeSelect.querySelector('option[value="Generatif"]');
+                if (generatifOption) {
+                    generatifOption.disabled = true;
+                }
+                // Tampilkan template container dan isi HANYA dengan Input Umur Pohon
+                templateContainer.classList.remove('hidden');
+                templateSelect.innerHTML = '<option value="" disabled selected>Pilih kegiatan</option>';
+                const option = document.createElement('option');
+                option.value = 'Input Umur Pohon';
+                option.textContent = 'Input Umur Pohon';
+                templateSelect.appendChild(option);
+                setTimeout(() => {
+                    templateSelect.value = 'Input Umur Pohon';
+                    document.getElementById('umur-pohon-container').classList.remove('hidden');
+                    document.getElementById('umur_pohon_input').setAttribute('required', 'required');
+                }, 100);
+            } else {
+                // Jika semua sudah lengkap, tampilkan semua template sesuai metode (tanpa Input Umur Pohon)
+                templates.forEach(template => {
+                    const option = document.createElement('option');
+                    option.value = template;
+                    option.textContent = template;
+                    templateSelect.appendChild(option);
+                });
+            }
         });
 
         templateSelect.addEventListener('change', function() {
             const selectedTemplate = this.value;
+
+            // VALIDASI TINGKAT TINGGI: Mencegah perubahan kegiatan berdasarkan prioritas
+            if (mitraJumlahPohon === 0 && selectedTemplate !== 'Pembibitan') {
+                alert('Anda harus melakukan pembibitan terlebih dahulu. Hanya kegiatan Pembibitan yang diperbolehkan.');
+                this.value = 'Pembibitan';
+                return;
+            }
+
+            if (mitraJumlahPohon > 0 && !mitraUmurPohonSet && selectedTemplate !== 'Input Umur Pohon') {
+                alert('Anda harus menginput umur pohon terlebih dahulu. Hanya kegiatan Input Umur Pohon yang diperbolehkan.');
+                this.value = 'Input Umur Pohon';
+                return;
+            }
+
+            // Validasi umur pohon untuk Panen Buah
+            if (selectedTemplate === 'Panen Buah' && mitraUmurPohonSet) {
+                const umurPohonSekarang = {{ round($selectedMitra->umur_pohon_sekarang ?? 0) }};
+                if (umurPohonSekarang < 300) {
+                    alert(`Pohon harus berumur minimal 300 hari untuk dapat dipanen. Umur pohon saat ini: ${umurPohonSekarang} hari.`);
+                    this.value = '';
+                    return;
+                }
+            }
 
             // Show custom template input if "Kegiatan Lainnya" is selected
             if (selectedTemplate === 'Kegiatan Lainnya') {
@@ -533,6 +748,24 @@
                 harvestAmountContainer.classList.remove('hidden');
             } else {
                 harvestAmountContainer.classList.add('hidden');
+            }
+
+            // Show umur pohon input if "Input Umur Pohon" is selected
+            if (selectedTemplate === 'Input Umur Pohon') {
+                document.getElementById('umur-pohon-container').classList.remove('hidden');
+                document.getElementById('umur_pohon_input').setAttribute('required', 'required');
+            } else {
+                document.getElementById('umur-pohon-container').classList.add('hidden');
+                document.getElementById('umur_pohon_input').removeAttribute('required');
+            }
+
+            // Show jumlah pembibitan input if "Pembibitan" is selected
+            if (selectedTemplate === 'Pembibitan') {
+                document.getElementById('jumlah-pembibitan-container').classList.remove('hidden');
+                document.getElementById('jumlah_pembibitan').setAttribute('required', 'required');
+            } else {
+                document.getElementById('jumlah-pembibitan-container').classList.add('hidden');
+                document.getElementById('jumlah_pembibitan').removeAttribute('required');
             }
         });
 
@@ -553,6 +786,97 @@
         const kegiatan = document.getElementById('template');
         if (kegiatan) {
             kegiatan.addEventListener('change', toggleHarvestFields);
+        }
+
+        // Logika untuk mitra dengan 0 pohon
+        const mitraJumlahPohon = {{ $selectedMitra->jumlah_pohon ?? $selectedMitra->pohon ?? 0 }};
+        const mitraUmurPohonSet = {{ $selectedMitra->isUmurPohonSet() ? 'true' : 'false' }};
+
+        // Validasi umur pohon input
+        const umurPohonInput = document.getElementById('umur_pohon_input');
+        if (umurPohonInput) {
+            umurPohonInput.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                const min = 1;
+                const max = 730;
+
+                if (this.value !== '') {
+                    if (value < min || value > max) {
+                        this.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+                        this.classList.remove('border-gray-300', 'focus:border-blue-500', 'focus:ring-blue-200');
+
+                        // Show error message
+                        let errorMsg = this.parentNode.querySelector('.umur-pohon-error');
+                        if (!errorMsg) {
+                            errorMsg = document.createElement('p');
+                            errorMsg.className = 'mt-1 text-sm text-red-600 umur-pohon-error';
+                            this.parentNode.appendChild(errorMsg);
+                        }
+                        errorMsg.textContent = `Umur pohon harus antara ${min} - ${max} hari.`;
+                    } else {
+                        this.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+                        this.classList.add('border-gray-300', 'focus:border-blue-500', 'focus:ring-blue-200');
+
+                        // Remove error message
+                        const errorMsg = this.parentNode.querySelector('.umur-pohon-error');
+                        if (errorMsg) {
+                            errorMsg.remove();
+                        }
+                    }
+                } else {
+                    this.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+                    this.classList.add('border-gray-300', 'focus:border-blue-500', 'focus:ring-blue-200');
+
+                    // Remove error message
+                    const errorMsg = this.parentNode.querySelector('.umur-pohon-error');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                }
+            });
+        }
+
+        // Validasi jumlah pembibitan input
+        const jumlahPembibitanInput = document.getElementById('jumlah_pembibitan');
+        if (jumlahPembibitanInput) {
+            jumlahPembibitanInput.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                const min = 1;
+
+                if (this.value !== '') {
+                    if (value < min) {
+                        this.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+                        this.classList.remove('border-gray-300', 'focus:border-blue-500', 'focus:ring-blue-200');
+
+                        // Show error message
+                        let errorMsg = this.parentNode.querySelector('.jumlah-pembibitan-error');
+                        if (!errorMsg) {
+                            errorMsg = document.createElement('p');
+                            errorMsg.className = 'mt-1 text-sm text-red-600 jumlah-pembibitan-error';
+                            this.parentNode.appendChild(errorMsg);
+                        }
+                        errorMsg.textContent = `Jumlah pembibitan minimal ${min}.`;
+                    } else {
+                        this.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+                        this.classList.add('border-gray-300', 'focus:border-blue-500', 'focus:ring-blue-200');
+
+                        // Remove error message
+                        const errorMsg = this.parentNode.querySelector('.jumlah-pembibitan-error');
+                        if (errorMsg) {
+                            errorMsg.remove();
+                        }
+                    }
+                } else {
+                    this.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+                    this.classList.add('border-gray-300', 'focus:border-blue-500', 'focus:ring-blue-200');
+
+                    // Remove error message
+                    const errorMsg = this.parentNode.querySelector('.jumlah-pembibitan-error');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                }
+            });
         }
     });
 </script>

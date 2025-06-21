@@ -155,6 +155,12 @@ class LaporanController extends Controller
                   ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_laporan', $request->bulan);
+        }
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_laporan', $request->tahun);
+        }
 
         $laporans = $query->latest()->paginate(5);
 

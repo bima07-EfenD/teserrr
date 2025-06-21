@@ -179,6 +179,9 @@
                             </div>
                         @endforelse
                     </div>
+                    <div class="px-6 py-4">
+                        {{ $pengajuanTerbaru->links() }}
+                    </div>
                 </div>
 
                 <!-- Laporan Terbaru -->
@@ -219,6 +222,9 @@
                                 Belum ada laporan terbaru
                             </div>
                         @endforelse
+                    </div>
+                    <div class="px-6 py-4">
+                        {{ $laporanTerbaru->links() }}
                     </div>
                 </div>
             </div>

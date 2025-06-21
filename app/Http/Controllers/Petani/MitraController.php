@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\Mitra;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use App\Models\Provinsi;
 
 class MitraController extends Controller
@@ -37,7 +36,7 @@ class MitraController extends Controller
             'telepon' => 'required|string|max:15',
             'luas_lahan' => 'required|numeric',
             'punya_alpukat' => 'required|in:ya,tidak',
-            'jumlah_pohon' => 'required_if:punya_alpukat,ya|integer|nullable',
+            'jumlah_pohon' => 'required_if:punya_alpukat,ya|integer|min:20|nullable',
             'provinsi_id' => 'required|exists:provinsis,id',
             'kabupaten_id' => 'required|exists:kabupatens,id',
             'kecamatan_id' => 'required|exists:kecamatans,id',
@@ -49,32 +48,64 @@ class MitraController extends Controller
             'surat_tanah' => 'required|file|mimes:pdf|max:10240',
             'kontrak' => 'required|file|mimes:pdf|max:10240',
         ], [
+            'jumlah_pohon.required_if' => 'Jumlah pohon alpukat harus diisi ketika memilih memiliki pohon alpukat.',
+            'jumlah_pohon.min' => 'Jumlah pohon alpukat minimal harus 20 pohon.',
+            'jumlah_pohon.integer' => 'Jumlah pohon alpukat harus berupa angka.',
             'media_lahan.max' => 'Foto lahan tidak boleh lebih dari 10MB',
             'surat_tanah.max' => 'File surat tanah tidak boleh lebih dari 10MB',
             'kontrak.max' => 'File kontrak tidak boleh lebih dari 10MB',
         ]);
 
         try {
+            // Validasi tambahan untuk jumlah pohon
+            if ($request->punya_alpukat === 'ya' && (!$request->jumlah_pohon || $request->jumlah_pohon < 20)) {
+                return redirect()->back()
+                    ->with('error', 'Jumlah pohon alpukat minimal harus 20 pohon untuk dapat mengajukan kemitraan.')
+                    ->withInput();
+            }
+
+            // Validasi file uploads
+            if (!$request->hasFile('media_lahan') || !$request->hasFile('surat_tanah') || !$request->hasFile('kontrak')) {
+                return redirect()->back()
+                    ->with('error', 'Semua file (foto lahan, surat tanah, dan kontrak) harus diupload.')
+                    ->withInput();
+            }
+
             // Upload media lahan
             $mediaLahan = $request->file('media_lahan');
+            if (!$mediaLahan->isValid()) {
+                return redirect()->back()
+                    ->with('error', 'File foto/video lahan tidak valid.')
+                    ->withInput();
+            }
             $mediaLahanName = time() . '_' . $mediaLahan->getClientOriginalName();
             $mediaLahan->move(public_path('storage/media-lahan'), $mediaLahanName);
             $mediaLahanPath = 'media-lahan/' . $mediaLahanName;
 
             // Upload surat tanah
             $suratTanah = $request->file('surat_tanah');
+            if (!$suratTanah->isValid()) {
+                return redirect()->back()
+                    ->with('error', 'File surat tanah tidak valid.')
+                    ->withInput();
+            }
             $suratTanahName = time() . '_' . $suratTanah->getClientOriginalName();
             $suratTanah->move(public_path('storage/surat-tanah'), $suratTanahName);
             $suratTanahPath = 'surat-tanah/' . $suratTanahName;
 
             // Upload kontrak
             $kontrak = $request->file('kontrak');
+            if (!$kontrak->isValid()) {
+                return redirect()->back()
+                    ->with('error', 'File kontrak tidak valid.')
+                    ->withInput();
+            }
             $kontrakName = time() . '_' . $kontrak->getClientOriginalName();
             $kontrak->move(public_path('storage/kontrak'), $kontrakName);
             $kontrakPath = 'kontrak/' . $kontrakName;
 
             // Set jumlah pohon berdasarkan pilihan punya_alpukat
-            $jumlahPohon = $request->punya_alpukat === 'tidak' ? 0 : $request->jumlah_pohon;
+            $jumlahPohon = $request->punya_alpukat === 'tidak' ? 0 : ($request->jumlah_pohon ?? 0);
 
             // Buat data mitra baru
             Mitra::create([
@@ -101,7 +132,6 @@ class MitraController extends Controller
                 ->with('success', 'Data mitra berhasil ditambahkan dan sedang menunggu persetujuan.');
 
         } catch (\Exception $e) {
-            Log::error('Error creating mitra: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat menyimpan data mitra. Silakan coba lagi.')
                 ->withInput();

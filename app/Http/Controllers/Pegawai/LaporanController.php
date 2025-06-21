@@ -34,7 +34,7 @@ class LaporanController extends Controller
             $selectedMitra = Mitra::findOrFail($request->mitra_id);
         }
 
-        $laporans = $query->latest()->paginate(10);
+        $laporans = $query->latest()->paginate(6);
         $mitras = Mitra::where('status', 'disetujui')->get();
 
         return view('pegawai.laporan.index', compact('laporans', 'mitras', 'selectedMitra'));
@@ -57,16 +57,81 @@ class LaporanController extends Controller
         $request->validate([
             'mitra_id' => 'required|exists:mitras,id',
             'judul' => 'required|string|max:255',
-            'tanggal_laporan' => 'required|date',
             'keterangan' => 'required|string',
             'metode' => 'required|string|in:Vegetatif,Generatif',
             'template' => 'nullable|string|max:100',
             'kegiatan_lainnya' => 'nullable|string|max:255',
             'panen_buah' => 'nullable|numeric|min:0',
             'berat_rata_rata' => 'nullable|numeric|min:0',
+            'umur_pohon_input' => 'nullable|integer|min:1|max:730',
+            'jumlah_pembibitan' => 'nullable|integer|min:1',
             'media_foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'media_video' => 'nullable|mimes:mp4,mov,avi|max:10240'
         ]);
+
+        // Ambil data mitra
+        $mitra = Mitra::findOrFail($request->mitra_id);
+
+        // VALIDASI UTAMA: Jumlah pohon mengalahkan umur pohon
+        if (($mitra->jumlah_pohon ?? 0) == 0) {
+            // Jika jumlah pohon 0, hanya boleh metode vegetatif dan template 'Pembibitan'
+            if ($request->metode !== 'Vegetatif') {
+                return back()->withErrors(['metode' => 'Hanya metode Vegetatif yang diperbolehkan jika jumlah pohon 0.'])->withInput();
+            }
+            if ($request->template !== 'Pembibitan') {
+                return back()->withErrors(['template' => 'Hanya kegiatan Pembibitan yang diperbolehkan jika jumlah pohon 0.'])->withInput();
+            }
+            if (!$request->jumlah_pembibitan) {
+                return back()->withErrors(['jumlah_pembibitan' => 'Jumlah pembibitan harus diisi.'])->withInput();
+            }
+        } else if (!$mitra->isUmurPohonSet()) {
+            // Jika jumlah pohon > 0 tapi umur pohon belum diinput, hanya boleh input umur pohon
+            if ($request->metode !== 'Vegetatif') {
+                return back()->withErrors(['metode' => 'Hanya metode Vegetatif yang diperbolehkan sebelum input umur pohon.'])->withInput();
+            }
+            if ($request->template !== 'Input Umur Pohon') {
+                return back()->withErrors(['template' => 'Hanya kegiatan Input Umur Pohon yang diperbolehkan sebelum input umur pohon.'])->withInput();
+            }
+            if (!$request->umur_pohon_input) {
+                return back()->withErrors(['umur_pohon_input' => 'Umur pohon harus diisi.'])->withInput();
+            }
+        } else {
+            // Jika umur pohon sudah diinput, tidak boleh lagi input umur pohon
+            if ($request->template === 'Input Umur Pohon') {
+                return back()->withErrors(['template' => 'Umur pohon sudah diinput sebelumnya. Tidak dapat menginput ulang.'])->withInput();
+            }
+
+            // Validasi umur pohon untuk kegiatan Panen Buah
+            if ($request->template === 'Panen Buah') {
+                $umurPohonSekarang = $mitra->getUmurPohonSekarangAttribute();
+                if ($umurPohonSekarang < 300) {
+                    return back()->withErrors(['template' => 'Pohon harus berumur minimal 300 hari untuk dapat dipanen. Umur pohon saat ini: ' . round($umurPohonSekarang) . ' hari.'])->withInput();
+                }
+            }
+        }
+
+        // Jika template adalah 'Pembibitan', update jumlah pohon mitra
+        if ($request->template === 'Pembibitan') {
+            if (!$request->jumlah_pembibitan) {
+                return back()->withErrors(['jumlah_pembibitan' => 'Jumlah pembibitan harus diisi.'])->withInput();
+            }
+
+            $mitra->update([
+                'jumlah_pohon' => ($mitra->jumlah_pohon ?? 0) + $request->jumlah_pembibitan
+            ]);
+        }
+
+        // Jika template adalah 'Input Umur Pohon', update data umur pohon mitra
+        if ($request->template === 'Input Umur Pohon') {
+            if (!$request->umur_pohon_input) {
+                return back()->withErrors(['umur_pohon_input' => 'Umur pohon harus diisi.'])->withInput();
+            }
+
+            $mitra->update([
+                'umur_pohon' => $request->umur_pohon_input,
+                'tanggal_input_umur' => now()->toDateString()
+            ]);
+        }
 
         if ($request->hasFile('media_foto')) {
             $mediaFoto = $request->file('media_foto');
@@ -91,7 +156,7 @@ class LaporanController extends Controller
             'pegawai_id' => Auth::id(),
             'mitra_id' => $request->mitra_id,
             'judul' => $request->judul,
-            'tanggal_laporan' => $request->tanggal_laporan,
+            'tanggal_laporan' => now()->toDateString(),
             'keterangan' => $request->keterangan,
             'metode' => $request->metode,
             'template' => $request->template,
@@ -127,7 +192,6 @@ class LaporanController extends Controller
         $request->validate([
             'mitra_id' => 'required|exists:mitras,id',
             'judul' => 'required|string|max:255',
-            'tanggal_laporan' => 'required|date',
             'keterangan' => 'required|string',
             'metode' => 'required|string|max:100',
             'berat_rata_rata' => 'nullable|numeric|min:0',
@@ -135,7 +199,7 @@ class LaporanController extends Controller
             'media_video' => 'nullable|mimes:mp4,mov,avi|max:10240'
         ]);
 
-        $data = $request->only(['mitra_id', 'judul', 'tanggal_laporan', 'keterangan', 'metode', 'berat_rata_rata']);
+        $data = $request->only(['mitra_id', 'judul', 'keterangan', 'metode', 'berat_rata_rata']);
 
         // Upload foto jika ada
         if ($request->hasFile('media_foto')) {
@@ -270,8 +334,14 @@ class LaporanController extends Controller
                   ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_laporan', $request->bulan);
+        }
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_laporan', $request->tahun);
+        }
 
-        $laporans = $query->latest()->paginate(10);
+        $laporans = $query->latest()->paginate(6);
 
         // Untuk filter/pencarian AJAX
         if ($request->ajax()) {

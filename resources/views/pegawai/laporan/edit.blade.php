@@ -84,10 +84,10 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </div>
-                                    <input type="date" name="tanggal_laporan" id="tanggal_laporan"
-                                        value="{{ old('tanggal_laporan', $laporan->tanggal_laporan ? $laporan->tanggal_laporan->format('Y-m-d') : date('Y-m-d')) }}"
-                                        class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition" required>
+                                    <input type="date" name="tanggal_laporan" id="tanggal_laporan" value="{{ date('Y-m-d') }}"
+                                        class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-100 focus:bg-gray-100 focus:border-gray-300 focus:ring-gray-200 focus:ring-2 transition cursor-not-allowed" readonly>
                                 </div>
+                                <p class="mt-1 text-sm text-gray-500">Tanggal laporan otomatis diset ke hari ini</p>
                                 @error('tanggal_laporan')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -342,153 +342,134 @@
 @push('scripts')
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        ClassicEditor
-            .create(document.querySelector('#keterangan'), {
-                toolbar: [
-                    'heading', '|', 'bold', 'italic', 'link', 'bulletedList',
-                    'numberedList', 'blockQuote', 'undo', 'redo', 'insertTable', 'imageUpload'
-                ]
-            })
-            .then(editor => {
-                const editable = editor.ui.view.editable.element;
-                editable.style.minHeight = '300px';
-                editable.style.overflowY = 'auto';
-            })
-            .catch(error => {
-                console.error(error);
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.ClassicEditor) {
+        ClassicEditor.create(document.querySelector('#keterangan'), {
+            toolbar: [
+                'heading', '|', 'bold', 'italic', 'link', 'bulletedList',
+                'numberedList', 'blockQuote', 'undo', 'redo', 'insertTable', 'imageUpload'
+            ]
+        }).then(editor => {
+            const editable = editor.ui.view.editable.element;
+            editable.style.minHeight = '300px';
+            editable.style.overflowY = 'auto';
+        }).catch(error => { console.error(error); });
+    }
 
-        const form = document.querySelector('form');
-        if (!form) return;
-        const fotoInput = document.getElementById('media_foto');
-        const videoInput = document.getElementById('media_video');
+    // --- Logika Metode & Kegiatan ---
+    const metodeSelect = document.getElementById('metode');
+    const templateSelect = document.getElementById('template');
+    const kegiatanLainnyaField = document.getElementById('kegiatanLainnyaField');
+    const panenFields = document.getElementById('panenFields');
+    const mitraJumlahPohon = {{ $laporan->mitra->jumlah_pohon ?? 0 }};
+    const mitraUmurPohonSet = {{ $laporan->mitra->isUmurPohonSet() ? 'true' : 'false' }};
+    const umurPohon = {{ round($laporan->mitra->umur_pohon_sekarang ?? 0) }};
 
-        form.addEventListener('submit', function(e) {
-            // Validasi foto
-            if (fotoInput && fotoInput.files.length > 0) {
-                const foto = fotoInput.files[0];
-                const fotoSize = foto.size / 1024 / 1024; // dalam MB
-                if (fotoSize > 2) {
-                    e.preventDefault();
-                    alert('Ukuran foto maksimal 2MB');
-                    return;
-                }
-                if (!foto.type.startsWith('image/')) {
-                    e.preventDefault();
-                    alert('Format file harus berupa gambar');
-                    return;
-                }
-            }
-            // Validasi video
-            if (videoInput && videoInput.files.length > 0) {
-                const video = videoInput.files[0];
-                const videoSize = video.size / 1024 / 1024; // dalam MB
-                if (videoSize > 10) {
-                    e.preventDefault();
-                    alert('Ukuran video maksimal 10MB');
-                    return;
-                }
-                if (!video.type.startsWith('video/')) {
-                    e.preventDefault();
-                    alert('Format file harus berupa video');
-                    return;
-                }
-            }
+    const vegetatifTemplates = [
+        'Pembibitan',
+        'Sambung pucuk (grafting)',
+        'Okulasi',
+        'Stek batang',
+        'Kegiatan Lainnya'
+    ];
+    const vegetatifTemplatesWithUmurPohon = [
+        'Input Umur Pohon',
+        ...vegetatifTemplates
+    ];
+    const generatifTemplates = [
+        'Pemangkasan',
+        'Pemupukan',
+        'Pengairan rutin',
+        'Pengendalian hama/penyakit',
+        'Penjarangan buah',
+        'Panen Buah',
+        'Kegiatan Lainnya'
+    ];
+    const generatifTemplatesWithoutPanen = [
+        'Pemangkasan',
+        'Pemupukan',
+        'Pengairan rutin',
+        'Pengendalian hama/penyakit',
+        'Penjarangan buah',
+        'Kegiatan Lainnya'
+    ];
+
+    function updateTemplateOptions() {
+        const selectedMethod = metodeSelect.value;
+        const currentTemplate = templateSelect.value;
+        let templates = [];
+        if (selectedMethod === 'Vegetatif') {
+            templates = mitraUmurPohonSet ? vegetatifTemplates : vegetatifTemplatesWithUmurPohon;
+        } else {
+            templates = (mitraUmurPohonSet && umurPohon >= 300) ? generatifTemplates : generatifTemplatesWithoutPanen;
+        }
+        templateSelect.innerHTML = '<option value="" disabled selected>Pilih kegiatan</option>';
+        templates.forEach(template => {
+            const option = document.createElement('option');
+            option.value = template;
+            option.textContent = template;
+            if (template === currentTemplate) option.selected = true;
+            templateSelect.appendChild(option);
         });
+        templateSelect.dispatchEvent(new Event('change'));
+    }
 
-        const metodeSelect = document.getElementById('metode');
-        const templateSelect = document.getElementById('template');
-        const kegiatanLainnyaField = document.getElementById('kegiatanLainnyaField');
-        const panenFields = document.getElementById('panenFields');
-
-        const vegetatifTemplates = [
-            'Pemupukan',
-            'Penyiraman',
-            'Pemangkasan',
-            'Pengendalian Hama',
-            'Kegiatan Lainnya'
-        ];
-
-        const generatifTemplates = [
-            'Panen',
-            'Pembibitan',
-            'Persiapan Lahan',
-            'Kegiatan Lainnya'
-        ];
-
-        function updateTemplateOptions() {
-            const selectedMethod = metodeSelect.value;
-            const currentTemplate = templateSelect.value;
-
-            // Clear and update template options
-            templateSelect.innerHTML = '<option value="" disabled>Pilih template laporan</option>';
-
-            const templates = selectedMethod === 'Vegetatif' ? vegetatifTemplates : generatifTemplates;
-            templates.forEach(template => {
-                const option = document.createElement('option');
-                option.value = template;
-                option.textContent = template;
-                if (template === currentTemplate) {
-                    option.selected = true;
-                }
-                templateSelect.appendChild(option);
-            });
-
-            // Trigger change event to update fields visibility
-            templateSelect.dispatchEvent(new Event('change'));
+    function toggleFields() {
+        const selectedTemplate = templateSelect.value;
+        if (selectedTemplate === 'Kegiatan Lainnya') {
+            kegiatanLainnyaField.classList.remove('hidden');
+            panenFields.classList.add('hidden');
+        } else if (selectedTemplate === 'Panen Buah') {
+            kegiatanLainnyaField.classList.add('hidden');
+            panenFields.classList.remove('hidden');
+        } else {
+            kegiatanLainnyaField.classList.add('hidden');
+            panenFields.classList.add('hidden');
         }
+    }
 
-        function toggleFields() {
-            const selectedTemplate = templateSelect.value;
-
-            if (selectedTemplate === 'Kegiatan Lainnya') {
-                kegiatanLainnyaField.classList.remove('hidden');
-                panenFields.classList.add('hidden');
-            } else if (selectedTemplate === 'Panen') {
-                kegiatanLainnyaField.classList.add('hidden');
-                panenFields.classList.remove('hidden');
-            } else {
-                kegiatanLainnyaField.classList.add('hidden');
-                panenFields.classList.add('hidden');
-            }
-        }
-
-        // Event listeners
-        metodeSelect.addEventListener('change', updateTemplateOptions);
-        templateSelect.addEventListener('change', toggleFields);
-
-        // Initial state
-        updateTemplateOptions();
+    metodeSelect.addEventListener('change', updateTemplateOptions);
+    templateSelect.addEventListener('change', function() {
         toggleFields();
-
-        // Handle media removal
-        const removePhotoBtn = document.getElementById('remove-photo');
-        const removeVideoBtn = document.getElementById('remove-video');
-
-        if (removePhotoBtn) {
-            removePhotoBtn.addEventListener('click', function() {
-                const container = document.getElementById('photo-preview-container');
-                if (container) {
-                    container.remove();
-                }
-                if (fotoInput) {
-                    fotoInput.value = '';
-                }
-            });
-        }
-
-        if (removeVideoBtn) {
-            removeVideoBtn.addEventListener('click', function() {
-                const container = document.getElementById('video-preview-container');
-                if (container) {
-                    container.remove();
-                }
-                if (videoInput) {
-                    videoInput.value = '';
-                }
-            });
+        // Validasi Panen Buah
+        if (templateSelect.value === 'Panen Buah' && umurPohon < 300) {
+            alert('Pohon harus berumur minimal 300 hari untuk dapat dipanen. Umur pohon saat ini: ' + umurPohon + ' hari.');
+            templateSelect.value = '';
+            toggleFields();
         }
     });
+
+    // Initial state
+    updateTemplateOptions();
+    toggleFields();
+
+    // Handle media removal
+    const removePhotoBtn = document.getElementById('remove-photo');
+    const removeVideoBtn = document.getElementById('remove-video');
+
+    if (removePhotoBtn) {
+        removePhotoBtn.addEventListener('click', function() {
+            const container = document.getElementById('photo-preview-container');
+            if (container) {
+                container.remove();
+            }
+            if (fotoInput) {
+                fotoInput.value = '';
+            }
+        });
+    }
+
+    if (removeVideoBtn) {
+        removeVideoBtn.addEventListener('click', function() {
+            const container = document.getElementById('video-preview-container');
+            if (container) {
+                container.remove();
+            }
+            if (videoInput) {
+                videoInput.value = '';
+            }
+        });
+    }
+});
 </script>
 @endpush

@@ -33,6 +33,7 @@
                         Kembali
                     </a>
                 </div>
+
                 <!-- Step Indicator & Progress Bar -->
                 <div class="flex items-center justify-between mb-6">
                     <button type="button" onclick="showStep1()" id="step1Btn"
@@ -86,7 +87,7 @@
                             @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Apakah memiliki pohon alpukat?</label>
+                            <label class="block text-sm font-medium text-gray-700">Apakah memiliki pohon alpukat siap berproduksi? (jika tidak ditahap berproduksi pilih tidak di opsi ini)</label>
                             <select name="punya_alpukat" id="punya_alpukat" required
                                 class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                 <option value="tidak">Tidak</option>
@@ -95,9 +96,30 @@
                         </div>
                         <div id="jumlah_pohon_container" style="display: none;">
                             <label class="block text-sm font-medium text-gray-700">Jumlah Pohon Alpukat</label>
-                            <input type="number" name="jumlah_pohon" min="0"
+                            <input type="number" name="jumlah_pohon" id="jumlah_pohon" min="20"
                                 class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Masukkan jumlah pohon alpukat">
+                                placeholder="Masukkan jumlah pohon alpukat (minimal 20 pohon)"
+                                oninput="validateJumlahPohon(this)">
+
+                            <!-- Info Alert -->
+                            <div class="mt-3 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-blue-800">Persyaratan Pengisian Pohon Alpukat</h3>
+                                        <div class="mt-2 text-sm text-blue-700">
+                                            <p>Untuk dapat mengajukan kemitraan, petani harus memiliki minimal <strong>20 pohon alpukat</strong> yang di tahap berproduksi umur pohon alpukat< 2 tahun .(jika memiliki pohon alpukat tetapi jumlah dibawah 20 dan umur pohon > 2 tahun pilih opsi tidak)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="mt-1 text-sm text-gray-500">Minimal 20 pohon alpukat untuk dapat mengajukan kemitraan, jika dibawah 20 pilih tidak untuk opsi ini</p>
+                            <p id="jumlah_pohon_error" class="text-red-500 text-sm mt-1 hidden"></p>
                             @error('jumlah_pohon')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -417,6 +439,21 @@
             let isValid = true;
             let invalidFields = [];
 
+            // Validasi jumlah pohon jika punya_alpukat = 'ya'
+            if (punyaAlpukatSelect.value === 'ya') {
+                const value = parseInt(jumlahPohonInput.value);
+                if (isNaN(value) || value < 20) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Jumlah pohon alpukat minimal harus 20 pohon untuk dapat mengajukan kemitraan.',
+                        confirmButtonText: 'OK'
+                    });
+                    jumlahPohonInput.focus();
+                    return;
+                }
+            }
+
             requiredFields.forEach(field => {
                 if (!field.value) {
                     isValid = false;
@@ -721,14 +758,45 @@
         // Toggle form jumlah pohon
         const punyaAlpukatSelect = document.getElementById('punya_alpukat');
         const jumlahPohonContainer = document.getElementById('jumlah_pohon_container');
+        const jumlahPohonInput = document.getElementById('jumlah_pohon');
 
         punyaAlpukatSelect.addEventListener('change', function() {
             if (this.value === 'ya') {
                 jumlahPohonContainer.style.display = 'block';
+                jumlahPohonInput.required = true;
             } else {
                 jumlahPohonContainer.style.display = 'none';
+                jumlahPohonInput.value = '';
+                jumlahPohonInput.required = false;
+                jumlahPohonInput.setCustomValidity('');
+                const errorElement = document.getElementById('jumlah_pohon_error');
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                    errorElement.textContent = '';
+                }
             }
         });
+
+        // Validation for jumlah pohon
+        function validateJumlahPohon(input) {
+            const value = parseInt(input.value);
+            const errorElement = document.getElementById('jumlah_pohon_error');
+
+            if (errorElement) {
+                errorElement.classList.add('hidden');
+                errorElement.textContent = '';
+            }
+
+            if (punyaAlpukatSelect.value === 'ya' && (isNaN(value) || value < 20)) {
+                if (errorElement) {
+                    errorElement.textContent = 'Jumlah pohon alpukat minimal 20 pohon';
+                    errorElement.classList.remove('hidden');
+                }
+                input.setCustomValidity('Jumlah pohon alpukat minimal 20 pohon');
+            } else {
+                input.setCustomValidity('');
+            }
+        }
 
         // File upload handling
         function handleFileUpload(input, previewId, nameId) {
@@ -797,6 +865,25 @@
                 phoneInput.setCustomValidity('');
             }
         }
+
+        // Form validation before submit
+        document.getElementById('form-step-1').addEventListener('submit', function(e) {
+            const punyaAlpukat = punyaAlpukatSelect.value;
+            const value = parseInt(jumlahPohonInput.value);
+            if (punyaAlpukat === 'ya') {
+                if (isNaN(value) || value < 20) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Jumlah pohon alpukat minimal harus 20 pohon untuk dapat mengajukan kemitraan.',
+                        confirmButtonText: 'OK'
+                    });
+                    jumlahPohonInput.focus();
+                    return false;
+                }
+            }
+        });
     </script>
 @endsection
 
@@ -825,6 +912,16 @@
                 footer: '<ul class="text-left">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>'
             });
         @endif --}}
+
+        // Cek jika ada session error
+        @if (session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Validasi Gagal',
+                text: '{{ session('error') }}',
+                confirmButtonText: 'OK'
+            });
+        @endif
 
         // Validasi ukuran file
         function validateFileSize(input, maxSizeMB, errorElementId) {

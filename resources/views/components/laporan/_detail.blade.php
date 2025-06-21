@@ -178,7 +178,7 @@
                             <form method="POST" action="{{ route('chat.store') }}" class="p-4 border-t border-gray-200">
                                 @csrf
                                 <input type="hidden" name="laporan_id" value="{{ $laporan->id }}">
-                                <input type="hidden" name="receiver_id" value="{{ Auth::id() == $laporan->pegawai->id ? $laporan->mitra->id : $laporan->pegawai->id }}">
+                                <input type="hidden" name="receiver_id" value="{{ Auth::id() == $laporan->pegawai->id ? $laporan->mitra->user_id : $laporan->pegawai->id }}">
                                 <div class="flex items-center">
                                     <textarea name="message" class="flex-1 border border-gray-300 rounded-lg p-2" rows="1" placeholder="Tulis pesan...">{{ old('message') }}</textarea>
                                     <button type="submit" class="ml-2 px-4 py-2 bg-indigo-500 text-white rounded-lg">Kirim</button>

@@ -3,7 +3,7 @@
     style="background-image: url('/images/avocado.png'); background-size: cover; background-position: center;">
 
     <!-- Gradient overlay -->
-    <div class="absolute inset-0 bg-gradient-to-b from-green-800/80 via-green-700/70 to-green-600/70"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-green-600/50 via-green-500/40 to-green-400/30" ></div>
 
     <!-- Main content -->
     <div class="max-w-6xl mx-auto px-6 text-center relative z-10" data-aos="fade-up" data-aos-once="false">

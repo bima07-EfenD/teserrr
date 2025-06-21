@@ -90,6 +90,24 @@
                     </form>
                 </div>
             </div>
+            <!-- Form Filter Bulan -->
+            <form method="GET" action="" class="mb-4 flex items-center gap-2">
+                <input type="hidden" name="search" value="{{ request('search') }}">
+                <label for="bulan" class="text-sm font-medium text-gray-700">Bulan:</label>
+                <select name="bulan" id="bulan" class="rounded border-gray-300" onchange="this.form.submit()">
+                    <option value="">Semua Bulan</option>
+                    @for ($i = 1; $i <= 12; $i++)
+                        <option value="{{ $i }}" @if(request('bulan') == $i) selected @endif>{{ DateTime::createFromFormat('!m', $i)->format('F') }}</option>
+                    @endfor
+                </select>
+                <label for="tahun" class="text-sm font-medium text-gray-700 ml-2">Tahun:</label>
+                <select name="tahun" id="tahun" class="rounded border-gray-300" onchange="this.form.submit()">
+                    <option value="">Semua Tahun</option>
+                    @for ($y = now()->year; $y >= now()->year - 5; $y--)
+                        <option value="{{ $y }}" @if(request('tahun') == $y) selected @endif>{{ $y }}</option>
+                    @endfor
+                </select>
+            </form>
             <!-- Daftar Laporan -->
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-4">
                 <div class="overflow-x-auto">

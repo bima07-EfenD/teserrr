@@ -70,7 +70,7 @@
                 </a>
 
                 <a href="{{ route('pegawai.mitra.index') }}"
-                    class="{{ request()->routeIs('owner.mitra.*') ? 'bg-blue-50 text-blue-600 border-blue-100' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent' }}
+                    class="{{ request()->routeIs('pegawai.mitra.*') ? 'bg-blue-50 text-blue-600 border-blue-100' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent' }}
                           flex items-center px-4 py-3 text-sm font-medium rounded-xl border transition-all duration-200 group">
                     <svg class="w-5 h-5 mr-3 transition-colors duration-200" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
@@ -80,14 +80,7 @@
                     <span class="transition-colors duration-200">Mitra</span>
                 </a>
 
-                {{-- <a href="{{ route('pegawai.petani.index') }}"
-                   class="{{ request()->routeIs('pegawai.petani.*') ? 'bg-blue-50 text-blue-600 border-blue-100' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent' }}
-                          flex items-center px-4 py-3 text-sm font-medium rounded-xl border transition-all duration-200 group">
-                    <svg class="w-5 h-5 mr-3 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    <span class="transition-colors duration-200">Petani</span>
-                </a> --}}
+
 
                 <a href="{{ route('pegawai.laporan.index') }}"
                     class="{{ request()->routeIs('pegawai.laporan.*') ? 'bg-blue-50 text-blue-600 border-blue-100' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent' }}

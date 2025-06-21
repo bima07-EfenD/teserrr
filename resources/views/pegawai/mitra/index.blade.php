@@ -96,6 +96,9 @@
                                 <th
                                     class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Jumlah Pohon</th>
+                                <th
+                                    class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Umur Pohon</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Aksi</th>
                             </tr>
@@ -129,6 +132,14 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900 text-center">{{ $mitra->jumlah_pohon }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        @if($mitra->isUmurPohonSet())
+                                            <div class="text-sm text-gray-900 font-medium">{{ round($mitra->umur_pohon_sekarang) }} hari</div>
+                                            <div class="text-xs text-gray-500">Input: {{ $mitra->tanggal_input_umur->format('d/m/Y') }}</div>
+                                        @else
+                                            <div class="text-sm text-red-600 font-medium">Belum diinput</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center space-x-3">
