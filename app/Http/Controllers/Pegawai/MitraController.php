@@ -40,7 +40,7 @@ class MitraController extends Controller
 
     public function show(Mitra $mitra)
     {
-        return view('pegawai.mitra.show', compact('mitra'));
+        return view('components.mitra._detail', compact('mitra'));
     }
 
     public function edit(Mitra $mitra)

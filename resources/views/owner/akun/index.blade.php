@@ -11,7 +11,7 @@
                 <div class="relative">
                     <div id="fotoPreview" class="relative">
                         @if($user->foto_profil)
-                            <img src="{{ Storage::url($user->foto_profil) }}" alt="Foto Profil" class="w-32 h-32 rounded-full border-4 border-white object-cover">
+                            <img src="{{ asset('storage/' . Auth::user()->foto_profil) }}" alt="Foto Profil" class="w-32 h-32 rounded-full border-4 border-white object-cover">
                         @else
                             <img src="https://ui-avatars.com/api/?name={{ $user->name }}" alt="Foto Profil" class="w-32 h-32 rounded-full border-4 border-white object-cover">
                         @endif
@@ -42,7 +42,7 @@
             <form id="editForm" action="{{ route('owner.akun.update') }}" method="POST" enctype="multipart/form-data" class="hidden">
                 @csrf
                 @method('PUT')
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
@@ -103,7 +103,7 @@
         const editForm = document.getElementById('editForm');
         const profileInfo = document.getElementById('profileInfo');
         const uploadButton = document.getElementById('uploadButton');
-        
+
         if (editForm.classList.contains('hidden')) {
             editForm.classList.remove('hidden');
             profileInfo.classList.add('hidden');
@@ -133,4 +133,4 @@
     });
 </script>
 @endpush
-@endsection 
+@endsection

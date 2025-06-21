@@ -8,6 +8,7 @@ use App\Models\Mitra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Chat;
 
 class LaporanController extends Controller
 {
@@ -38,7 +39,7 @@ class LaporanController extends Controller
 
         $laporans = $query->whereHas('mitra', function($q) use ($petaniId) {
             $q->where('user_id', $petaniId);
-        })->latest()->paginate(10);
+        })->latest()->paginate(6);
 
         $mitras = Mitra::where('user_id', $petaniId)
                       ->where('status', 'disetujui')
@@ -49,8 +50,10 @@ class LaporanController extends Controller
 
 
     public function show(Laporan $laporan)
+
     {
-        return view('petani.laporan.show', compact('laporan'));
+        $chats = Chat::where('laporan_id', $laporan->id)->with('sender')->latest()->get();
+        return view('petani.laporan.show', compact('laporan', 'chats'));
     }
 
 
@@ -77,7 +80,7 @@ class LaporanController extends Controller
 
         $laporans = $query->whereHas('mitra', function($q) use ($petaniId) {
             $q->where('user_id', $petaniId);
-        })->latest()->paginate(10);
+        })->latest()->paginate(6);
 
         if ($request->ajax()) {
             $view = view('petani.laporan._list', compact('laporans'))->render();
@@ -153,15 +156,19 @@ class LaporanController extends Controller
             });
         }
 
-        $laporans = $query->latest()->paginate(10);
+        $laporans = $query->latest()->paginate(5);
 
         // Untuk filter/pencarian AJAX
         if ($request->ajax()) {
-            $view = view('petani.laporan._list', compact('laporans'))->render();
+            $view = view('components.laporan._list', [
+                'laporans' => $laporans,
+                'start_index' => $laporans->firstItem()
+            ])->render();
             $pagination = $laporans->links()->toHtml();
             return response()->json([
                 'html' => $view,
-                'pagination' => $pagination
+                'pagination' => $pagination,
+                'start_index' => $laporans->firstItem()
             ]);
         }
 

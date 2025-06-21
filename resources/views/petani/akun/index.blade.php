@@ -28,7 +28,7 @@
                     <div class="relative">
                         <div id="fotoPreview" class="relative">
                             @if ($user->foto_profil)
-                                <img src="{{ Storage::url($user->foto_profil) }}" alt="Foto Profil"
+                                <img src="{{ asset('storage/' . Auth::user()->foto_profil) }}" alt="Foto Profil"
                                     class="w-32 h-32 rounded-full border-4 border-white object-cover">
                             @else
                                 <img src="https://ui-avatars.com/api/?name={{ $user->name }}" alt="Foto Profil"

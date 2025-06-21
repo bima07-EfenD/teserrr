@@ -1,25 +1,33 @@
-<nav class="bg-white sticky top-0 z-50 py-2 shadow-sm">
+<nav class="bg-white sticky top-0 z-50 py-2 shadow-sm" x-data="{
+    open: false,
+    current: (() => {
+        const path = window.location.pathname;
+        if (path === '/') return 'home';
+        if (path.startsWith('/profil')) return 'profil';
+        if (path.startsWith('/kemitraan')) return 'kemitraan';
+        return null;
+    })(),
+    sections: ['home', 'profil', 'kemitraan'],
+    isAuthPage: window.location.pathname.includes('/login') || window.location.pathname.includes('/register'),
+}">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between">
             <div class="flex items-center">
                 <div class="shrink-0">
-                    <img class="h-12" src="/logo-team-tas.png" alt="TEAM TAS">
+                    <img class="h-12" src="images/Frame.png" alt="TEAM TAS">
                 </div>
             </div>
-            <div class="hidden md:flex flex-1 justify-center">
+            <div class="hidden md:flex flex-1 justify-center" x-show="!isAuthPage">
                 <div class="flex space-x-8">
                     <a href="/"
-                        :class="current === 'beranda' ? 'text-green-600 font-medium' : 'text-gray-700'"
-                        class="text-sm font-medium hover:text-green-600 transition">Beranda</a>
-                    <a href="#tentang"
-                        :class="current === 'tentang' ? 'text-green-600 font-medium' : 'text-gray-700'"
-                        class="text-sm font-medium hover:text-green-600 transition">Tentang</a>
-                    <a href="#layanan"
-                        :class="current === 'layanan' ? 'text-green-600 font-medium' : 'text-gray-700'"
-                        class="text-sm font-medium hover:text-green-600 transition">Layanan</a>
-                    <a href="#kontak"
-                        :class="current === 'kontak' ? 'text-green-600 font-medium' : 'text-gray-700'"
-                        class="text-sm font-medium hover:text-green-600 transition">Kontak</a>
+                        :class="current === 'home' ? 'text-green-600 font-semibold border-b-2 border-yellow-500 pb-1' : 'text-gray-700 font-medium'"
+                        class="text-base hover:text-green-600 transition">Home</a>
+                    <a href="/profil"
+                        :class="current === 'profil' ? 'text-green-600 font-semibold border-b-2 border-yellow-500 pb-1' : 'text-gray-700 font-medium'"
+                        class="text-base hover:text-green-600 transition">Profil</a>
+                    <a href="/kemitraan"
+                        :class="current === 'kemitraan' ? 'text-green-600 font-semibold border-b-2 border-yellow-500 pb-1' : 'text-gray-700 font-medium'"
+                        class="text-base hover:text-green-600 transition">Kemitraan</a>
                 </div>
             </div>
             <div class="hidden md:flex space-x-2">
@@ -57,10 +65,14 @@
 
     <!-- Mobile menu -->
     <div x-show="open" x-transition @click.away="open = false" class="md:hidden bg-white px-4 py-3 space-y-2">
-        <a href="#beranda" class="block text-gray-700 hover:text-green-600">Beranda</a>
-        <a href="#tentang" class="block text-gray-700 hover:text-green-600 transition">Tentang</a>
-        <a href="#layanan" class="block text-gray-700 hover:text-green-600 transition">Layanan</a>
-        <a href="#kontak" class="block text-gray-700 hover:text-green-600 transition">Kontak</a>
+        <div x-show="!isAuthPage">
+            <a href="/" class="block text-gray-700 hover:text-green-600"
+                :class="current === 'home' ? 'text-green-600 font-semibold' : ''">Home</a>
+            <a href="/profil" class="block text-gray-700 hover:text-green-600 transition"
+                :class="current === 'profil' ? 'text-green-600 font-semibold' : ''">Profil</a>
+            <a href="/kemitraan" class="block text-gray-700 hover:text-green-600 transition"
+                :class="current === 'kemitraan' ? 'text-green-600 font-semibold' : ''">Kemitraan</a>
+        </div>
         <div class="pt-2 space-y-2">
             @auth
                 @if(auth()->user()->hasRole('owner'))

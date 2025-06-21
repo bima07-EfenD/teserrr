@@ -28,12 +28,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        if ($request->has('intended')) {
+            return redirect()->intended($request->intended);
+        }
+
+        // If no redirect parameter, use role-based redirection
         if (Auth::user()->role == 'owner') {
             return redirect()->intended(route('owner.dashboard'));
         } else if (Auth::user()->role == 'pegawai') {
             return redirect()->intended(route('pegawai.dashboard'));
         } else {
-            return redirect()->intended(route('petani.dashboard'));
+            return redirect()->intended('/');
         }
     }
 

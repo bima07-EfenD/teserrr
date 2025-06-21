@@ -47,7 +47,7 @@ class AkunController extends Controller
             // Upload foto baru
             $file = $request->file('foto_profil');
             $fileName = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('storage/foto-profil'), $fileName);
+            Storage::disk('public')->putFileAs('foto-profil', $file, $fileName);
             $user->foto_profil = 'foto-profil/' . $fileName;
         }
 

@@ -125,14 +125,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const mitraList = document.getElementById('mitraList');
     const paginationContainer = document.getElementById('paginationContainer');
+    let searchTimeout;
 
     searchForm.addEventListener('submit', function(e) {
         e.preventDefault();
         performSearch();
     });
 
+    // Add input event listener for real-time search
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 500);
+    });
+
     function performSearch() {
         const searchTerm = searchInput.value.trim();
+
+        // Show loading state
+        mitraList.innerHTML = `
+            <div class="col-span-full">
+                <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p class="mt-4 text-gray-600">Mencari mitra...</p>
+                </div>
+            </div>
+        `;
+
         fetch(`{{ route('pegawai.laporan.search-mitra-select') }}?search=${encodeURIComponent(searchTerm)}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'

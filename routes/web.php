@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 
 
 // Owner Controllers
@@ -25,15 +26,30 @@ use App\Http\Controllers\Pegawai\MitraController as PegawaiMitraController;
 use App\Http\Controllers\Pegawai\LaporanController as PegawaiLaporanController;
 use App\Http\Controllers\Pegawai\AkunController as PegawaiAkunController;
 
+use App\Http\Controllers\ChatController;
+
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('/profil', function () {
+    return view('profile');
+});
+
+Route::get('/kemitraan', function () {
+    return view('kemitraan');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
 });
 
 Route::middleware(['auth'])->group(function () {
 
     // Owner Routes
     Route::middleware(['role:owner'])->prefix('owner')->name('owner.')->group(function () {
+
         // Dashboard
         Route::get('/dashboard', [OwnerDashboardController::class, 'index'])->name('dashboard');
 
@@ -53,6 +69,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/search/mitra', [OwnerMitraController::class, 'search'])->name('search');
             Route::put('/{mitra}/update-status', [OwnerMitraController::class, 'updateStatus'])->name('updateStatus');
         });
+
         // Pegawai Management
         Route::prefix('pegawai')->name('pegawai.')->group(function () {
             Route::get('/', [OwnerPegawaiController::class, 'index'])->name('index');
@@ -62,12 +79,13 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{pegawai}/edit', [OwnerPegawaiController::class, 'edit'])->name('edit');
             Route::put('/{pegawai}', [OwnerPegawaiController::class, 'update'])->name('update');
         });
-        // Route untuk profil owner
-        Route::get('/akun', [App\Http\Controllers\Owner\AkunController::class, 'index'])->name('akun.index');
-        Route::put('/akun', [App\Http\Controllers\Owner\AkunController::class, 'update'])->name('akun.update');
 
-         //Laporan management
-         Route::prefix('laporan')->name('laporan.')->group(function () {
+        // Profil Akun Owner
+        Route::get('/akun', [OwnerAkunController::class, 'index'])->name('akun.index');
+        Route::put('/akun', [OwnerAkunController::class, 'update'])->name('akun.update');
+
+        // Laporan Management
+        Route::prefix('laporan')->name('laporan.')->group(function () {
             Route::get('/', [OwnerLaporanController::class, 'index'])->name('index');
             Route::get('/search', [OwnerLaporanController::class, 'search'])->name('search');
             Route::get('/create', [OwnerLaporanController::class, 'create'])->name('create');
@@ -80,7 +98,6 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{laporan}', [OwnerLaporanController::class, 'update'])->name('update');
             Route::delete('/{laporan}', [OwnerLaporanController::class, 'destroy'])->name('destroy');
             Route::get('/mitra/{mitra}', [OwnerLaporanController::class, 'laporanMitra'])->name('laporan-mitra');
-            // Route::get('/mitra/{mitra}', [OwnerLaporanController::class, 'mitra'])->name('mitra');
         });
     });
 
@@ -102,8 +119,8 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/', [PetaniAkunController::class, 'update'])->name('update');
         });
 
-         //Laporan management
-         Route::prefix('laporan')->name('laporan.')->group(function () {
+        //Laporan management
+        Route::prefix('laporan')->name('laporan.')->group(function () {
             Route::get('/', [PetaniLaporanController::class, 'index'])->name('index');
             Route::get('/search', [PetaniLaporanController::class, 'search'])->name('search');
             Route::get('/create', [PetaniLaporanController::class, 'create'])->name('create');
@@ -117,7 +134,6 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{laporan}', [PetaniLaporanController::class, 'destroy'])->name('destroy');
             Route::get('/mitra/{mitra}', [PetaniLaporanController::class, 'laporanMitra'])->name('laporan-mitra');
         });
-
     });
 
     // Pegawai Routes
@@ -145,6 +161,10 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{mitra}/update-jumlah-pohon', [PegawaiMitraController::class, 'updateJumlahPohon'])->name('update-jumlah-pohon');
         });
 
+
+        Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
+
+
         //Laporan management
         Route::prefix('laporan')->name('laporan.')->group(function () {
             Route::get('/', [PegawaiLaporanController::class, 'index'])->name('index');
@@ -170,15 +190,33 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 
     // API wilayah untuk form mitra (petani)
-    Route::get('/api/kabupaten/{provinsi_id}', function($provinsi_id) {
+    Route::get('/api/kabupaten/{provinsi_id}', function ($provinsi_id) {
         return \App\Models\Kabupaten::where('provinsi_id', $provinsi_id)->get();
     });
-    Route::get('/api/kecamatan/{kabupaten_id}', function($kabupaten_id) {
+    Route::get('/api/kecamatan/{kabupaten_id}', function ($kabupaten_id) {
         return \App\Models\Kecamatan::where('kabupaten_id', $kabupaten_id)->get();
     });
-    Route::get('/api/desa/{kecamatan_id}', function($kecamatan_id) {
+    Route::get('/api/desa/{kecamatan_id}', function ($kecamatan_id) {
         return \App\Models\Desa::where('kecamatan_id', $kecamatan_id)->get();
     });
+
+    Route::get('/grafik-panen/{idMitra}', [\App\Http\Controllers\Api\GrafikPanenController::class, 'index'])->name('grafik-panen');
 });
+
+Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    ->middleware('guest')
+    ->name('password.request');
+
+Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    ->middleware('guest')
+    ->name('password.email');
+
+Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])
+    ->middleware('guest')
+    ->name('password.reset');
+
+Route::post('reset-password', [ForgotPasswordController::class, 'reset'])
+    ->middleware('guest')
+    ->name('password.store');
 
 require __DIR__ . '/auth.php';

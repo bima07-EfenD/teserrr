@@ -17,16 +17,32 @@
 
 </head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-50" x-data="{ sidebarOpen: true }">
+    <div class="min-h-screen bg-gray-50" x-data="{
+            sidebarOpen: window.innerWidth >= 1024,
+            init() {
+                this.$watch('sidebarOpen', (value) => {
+                    if (!value && window.innerWidth >= 1024) {
+                        this.sidebarOpen = true;
+                    }
+                });
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth >= 1024) {
+                        this.sidebarOpen = true;
+                    } else {
+                        this.sidebarOpen = false;
+                    }
+                });
+            }
+        }">
         <!-- Sidebar -->
-        <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-all duration-300 ease-in-out" 
+        <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-all duration-300 ease-in-out"
              :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}">
-            
+
             <!-- Logo -->
             <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                <div class="flex items-center space-x-3">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-auto">
-                    <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">TAS</span>
+                <div class="flex items-center justify-center w-full">
+                    <img src="{{ asset('images/Frame.png') }}" alt="Logo" class="h-10 w-auto">
+
                 </div>
                 <button @click="sidebarOpen = false" class="lg:hidden text-gray-500 hover:text-gray-700 transition-colors duration-200">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,8 +53,8 @@
 
             <!-- Navigation -->
             <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
-                <a href="{{ route('owner.dashboard') }}" 
-                   class="{{ request()->routeIs('owner.dashboard') ? 'bg-blue-50 text-blue-600 border-blue-100' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent' }} 
+                <a href="{{ route('owner.dashboard') }}"
+                   class="{{ request()->routeIs('owner.dashboard') ? 'bg-blue-50 text-blue-600 border-blue-100' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent' }}
                           flex items-center px-4 py-3 text-sm font-medium rounded-xl border transition-all duration-200 group">
                     <svg class="w-5 h-5 mr-3 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -93,7 +109,7 @@
         </div>
 
         <!-- Mobile Sidebar Toggle -->
-        <div class="fixed lg:hidden" 
+        <div class="fixed lg:hidden"
              x-show="!sidebarOpen"
              x-transition:enter="transition-opacity ease-linear duration-300"
              x-transition:enter-start="opacity-0"
@@ -116,8 +132,12 @@
                     </button>
                     <div class="flex items-center space-x-4">
                         <span class="text-sm text-gray-700 font-medium">{{ Auth::user()->name }}</span>
-                        <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span class="text-sm font-medium text-blue-600">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                        <div class="h-8 w-8 rounded-full overflow-hidden flex items-center justify-center bg-blue-100">
+                            @if (Auth::user()->foto_profil)
+                                <img src="{{ asset('storage/' . Auth::user()->foto_profil) }}" alt="Profil" class="h-full w-full object-cover">
+                            @else
+                                <span class="text-sm font-medium text-blue-600">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -200,4 +220,4 @@
 
     @stack('scripts')
 </body>
-</html> 
+</html>

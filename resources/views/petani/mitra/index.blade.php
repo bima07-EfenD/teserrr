@@ -33,8 +33,8 @@
                         <span class="ml-3 text-blue-800 font-medium">Data Mitra</span>
                     </div>
                     <a href="{{ route('petani.mitra.create') }}"
-                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-md transition-all duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                        class="inline-flex items-center px-3 py-1 md:px-4 md:py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-md transition-all duration-200 text-sm md:text-base">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -47,7 +47,7 @@
             <!-- Form Pencarian -->
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-4">
                 <div class="p-6">
-                    <form id="filterForm" class="flex flex-col md:flex-row gap-4 items-end">
+                    <form id="filterForm" class="flex flex-col md:flex-row gap-4">
                         <div class="flex-1">
                             <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Cari Mitra</label>
                             <div class="relative">
@@ -87,13 +87,13 @@
                                 <option value="ditolak" @if (request('status') == 'ditolak') selected @endif>Ditolak</option>
                             </select>
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 w-full md:w-auto">
                             <button type="submit"
-                                class="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md transition-all duration-200 inline-flex items-center justify-center">
+                                class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md transition-all duration-200 inline-flex items-center justify-center">
                                 Cari
                             </button>
                             <button type="reset"
-                                class="w-full md:w-auto bg-gray-100 text-gray-700 px-6 py-2 rounded-xl hover:bg-gray-200 inline-flex items-center justify-center">
+                                class="flex-1 bg-gray-100 text-gray-700 px-6 py-2 rounded-xl hover:bg-gray-200 inline-flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -116,13 +116,13 @@
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Nama</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Email</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Telepon</th>
+                                    Luas Lahan</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Kabupaten</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Tanggal Daftar</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Aksi</th>
                             </tr>
@@ -135,31 +135,27 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            {{-- <div class="h-10 w-10 flex-shrink-0">
-                                        <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 font-semibold">
-                                            {{ strtoupper(substr($mitra->nama_lengkap, 0, 1)) }}
-                                        </div>
-                                    </div> --}}
                                             <div class="text-sm font-medium text-gray-900">{{ $mitra->nama_lengkap }}</div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $mitra->email }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $mitra->telepon }}</div>
+                                        <div class="text-sm text-gray-900">{{ number_format($mitra->luas_lahan) }}
+                                            m<sup>2</sup></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $mitra->kabupaten->nama }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
-                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                                     @if ($mitra->status == 'menunggu') bg-yellow-100 text-yellow-800
                                     @elseif($mitra->status == 'disetujui') bg-green-100 text-green-800
                                     @else bg-red-100 text-red-800 @endif">
                                             {{ ucfirst($mitra->status) }}
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap ">
+                                        <div class="text-sm text-gray-500">{{ $mitra->created_at->format('d M Y') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <a href="{{ route('petani.mitra.show', $mitra->id) }}"

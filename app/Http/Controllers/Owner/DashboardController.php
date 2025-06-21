@@ -35,25 +35,26 @@ class DashboardController extends Controller
 
         // Mengambil pengajuan terbaru
         $pengajuanTerbaru = Mitra::with('user')
+            ->where('status', 'menunggu')
             ->latest()
             ->take(5)
             ->get();
 
-        // Data untuk grafik pengajuan (6 bulan terakhir)
+        // Data untuk grafik pengajuan (1 bulan terakhir)
         $chartData = Mitra::select(
-            DB::raw('MONTH(created_at) as bulan'),
+            DB::raw('DATE(created_at) as tanggal'),
             DB::raw('COUNT(*) as total')
         )
-            ->where('created_at', '>=', now()->subMonths(6))
-            ->groupBy('bulan')
-            ->orderBy('bulan')
+            ->where('created_at', '>=', now()->subMonth())
+            ->groupBy('tanggal')
+            ->orderBy('tanggal')
             ->get();
 
         $chartLabels = [];
         $chartValues = [];
 
         foreach ($chartData as $data) {
-            $chartLabels[] = date('F', mktime(0, 0, 0, $data->bulan, 1));
+            $chartLabels[] = Carbon::parse($data->tanggal)->format('d M');
             $chartValues[] = $data->total;
         }
 
@@ -70,21 +71,21 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Data untuk grafik laporan (6 bulan terakhir)
+        // Data untuk grafik laporan (7 hari terakhir)
         $laporanChartData = Laporan::select(
-            DB::raw('MONTH(created_at) as bulan'),
+            DB::raw('DATE(created_at) as tanggal'),
             DB::raw('COUNT(*) as total')
         )
-            ->where('created_at', '>=', now()->subMonths(6))
-            ->groupBy('bulan')
-            ->orderBy('bulan')
+            ->where('created_at', '>=', now()->subDays(7))
+            ->groupBy('tanggal')
+            ->orderBy('tanggal')
             ->get();
 
         $laporanChartLabels = [];
         $laporanChartValues = [];
 
         foreach ($laporanChartData as $data) {
-            $laporanChartLabels[] = date('F', mktime(0, 0, 0, $data->bulan, 1));
+            $laporanChartLabels[] = Carbon::parse($data->tanggal)->format('d M');
             $laporanChartValues[] = $data->total;
         }
 

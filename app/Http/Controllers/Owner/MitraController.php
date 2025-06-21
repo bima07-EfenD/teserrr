@@ -9,6 +9,9 @@ use App\Models\Laporan;
 use App\Models\Mitra;
 use App\Models\Kabupaten;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\StatusMitraMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class MitraController extends Controller
 {
@@ -48,7 +51,7 @@ class MitraController extends Controller
 
     public function show(Mitra $mitra)
     {
-        return view('owner.mitra.show', compact('mitra'));
+        return view('components.mitra._detail', compact('mitra'));
     }
 
     public function edit(Mitra $mitra)
@@ -59,10 +62,40 @@ class MitraController extends Controller
     public function update(Request $request, Mitra $mitra)
     {
         $request->validate([
-            'status' => 'required|in:menunggu,disetujui,ditolak'
+            'status' => 'required|in:menunggu,disetujui,ditolak,nonaktif',
+            'alasan_penolakan' => 'required_if:status,ditolak,nonaktif',
+            'deskripsi_penolakan' => 'required_if:status,ditolak,nonaktif',
         ]);
 
-        $mitra->update(['status' => $request->status]);
+        // Validasi status nonaktif hanya bisa dari status disetujui
+        if ($request->status === 'nonaktif' && $mitra->status !== 'disetujui') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Status nonaktif hanya bisa diubah dari status disetujui'
+            ], 422);
+        }
+
+        $mitra->status = $request->status;
+
+        if ($request->status === 'ditolak' || $request->status === 'nonaktif') {
+            $mitra->alasan_penolakan = $request->alasan_penolakan;
+            $mitra->deskripsi_penolakan = $request->deskripsi_penolakan;
+        } else {
+            $mitra->alasan_penolakan = null;
+            $mitra->deskripsi_penolakan = null;
+        }
+
+        $mitra->save();
+
+        try {
+            Mail::to($mitra->email)->send(new StatusMitraMail($mitra));
+        } catch (\Exception $e) {
+            Log::error('Gagal mengirim email: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Status diperbarui tapi gagal mengirim email: ' . $e->getMessage()
+            ], 500);
+        }
 
         return response()->json([
             'success' => true,
@@ -89,7 +122,7 @@ class MitraController extends Controller
     public function approve(Mitra $mitra)
     {
         $mitra->update(['status' => 'disetujui']);
-        
+
         return redirect()->route('owner.mitra.index')
             ->with('success', 'Mitra berhasil disetujui.');
     }
@@ -97,7 +130,7 @@ class MitraController extends Controller
     public function reject(Mitra $mitra)
     {
         $mitra->update(['status' => 'ditolak']);
-        
+
         return redirect()->route('owner.mitra.index')
             ->with('success', 'Mitra berhasil ditolak.');
     }
@@ -124,7 +157,7 @@ class MitraController extends Controller
             ->sort()
             ->values();
         $kabupaten = $kabupatenList;
-        
+
         $mitras = Mitra::where('status', 'disetujui')
             ->where(function($query) use ($search) {
                 $query->where('nama_lengkap', 'like', "%{$search}%")
@@ -154,4 +187,4 @@ class MitraController extends Controller
 
         return redirect()->back()->with('success', 'Status mitra berhasil diperbarui.');
     }
-} 
+}

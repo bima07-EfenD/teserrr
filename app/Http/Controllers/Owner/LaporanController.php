@@ -8,6 +8,7 @@ use App\Models\Mitra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Chat;
 
 class LaporanController extends Controller
 {
@@ -40,22 +41,64 @@ class LaporanController extends Controller
 
     public function show(Laporan $laporan)
     {
+        $chats = Chat::where('laporan_id', $laporan->id)->with('sender')->latest()->get();
         $laporan->load(['mitra.user']);
-        return view('owner.laporan.show', compact('laporan'));
+        return view('owner.laporan.show',  compact('laporan', 'chats'));
     }
 
     public function update(Request $request, Laporan $laporan)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:menunggu,disetujui,ditolak'
+        $request->validate([
+            'mitra_id' => 'required|exists:mitras,id',
+            'judul' => 'required|string|max:255',
+            'tanggal_laporan' => 'required|date',
+            'keterangan' => 'required|string',
+            'metode' => 'required|string|in:Vegetatif,Generatif',
+            'template' => 'nullable|string|max:100',
+            'kegiatan_lainnya' => 'nullable|string|max:255',
+            'panen_buah' => 'nullable|numeric|min:0',
+            'berat_rata_rata' => 'nullable|numeric|min:0',
+            'media_foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'media_video' => 'nullable|mimes:mp4,mov,avi|max:10240'
         ]);
 
-        $laporan->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Status laporan berhasil diperbarui'
+        $data = $request->only([
+            'mitra_id',
+            'judul',
+            'tanggal_laporan',
+            'keterangan',
+            'metode',
+            'template',
+            'kegiatan_lainnya',
+            'panen_buah',
+            'berat_rata_rata'
         ]);
+
+        // Upload foto jika ada
+        if ($request->hasFile('media_foto')) {
+            if ($laporan->media_foto) {
+                Storage::disk('public')->delete($laporan->media_foto);
+            }
+            $foto = $request->file('media_foto');
+            $fotoPath = $foto->store('laporan/foto', 'public');
+            $data['media_foto'] = $fotoPath;
+        }
+
+        // Upload video jika ada
+        if ($request->hasFile('media_video')) {
+            if ($laporan->media_video) {
+                Storage::disk('public')->delete($laporan->media_video);
+            }
+            $video = $request->file('media_video');
+            $videoPath = $video->store('laporan/video', 'public');
+            $data['media_video'] = $videoPath;
+        }
+
+        $laporan->update($data);
+
+        return redirect()
+            ->route('owner.laporan.show', $laporan)
+            ->with('success', 'Laporan berhasil diperbarui');
     }
 
     public function destroy(Laporan $laporan)
@@ -150,14 +193,24 @@ class LaporanController extends Controller
 
         // Untuk filter/pencarian AJAX
         if ($request->ajax()) {
-            $view = view('owner.laporan._list', compact('laporans'))->render();
+            $view = view('owner.laporan._list', [
+                'laporans' => $laporans,
+                'start_index' => $laporans->firstItem()
+            ])->render();
             $pagination = $laporans->links()->toHtml();
             return response()->json([
                 'html' => $view,
-                'pagination' => $pagination
+                'pagination' => $pagination,
+                'start_index' => $laporans->firstItem()
             ]);
         }
 
         return view('owner.laporan.laporan-mitra', compact('mitra', 'laporans'));
+    }
+
+    public function edit(Laporan $laporan)
+    {
+        $mitras = Mitra::where('status', 'disetujui')->get();
+        return view('owner.laporan.edit', compact('laporan', 'mitras'));
     }
 }

@@ -9,6 +9,8 @@ class Laporan extends Model
 {
     use HasFactory;
 
+    protected $table = 'laporans';
+
     protected $fillable = [
         'pegawai_id',
         'mitra_id',
@@ -20,12 +22,13 @@ class Laporan extends Model
         'metode',
         'template',
         'kegiatan_lainnya',
-        'panen_buah'
+        'panen_buah',
+        'berat_rata_rata',
     ];
 
     protected $casts = [
         'tanggal_laporan' => 'datetime',
-        'harvest_amount' => 'decimal:2'
+        'panen_buah' => 'decimal:2'
     ];
 
     public function mitra()
@@ -36,5 +39,9 @@ class Laporan extends Model
     public function pegawai()
     {
         return $this->belongsTo(User::class, 'pegawai_id')->where('role', 'pegawai');
+    }
+    public function chats()
+    {
+        return $this->hasMany(Chat::class, 'laporan_id');
     }
 }

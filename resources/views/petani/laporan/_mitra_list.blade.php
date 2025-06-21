@@ -1,19 +1,18 @@
 @forelse($mitras as $mitra)
-<a href="{{ route('petani.laporan.index', ['mitra_id' => $mitra->id]) }}" 
+<a href="{{ route('petani.laporan.index', ['mitra_id' => $mitra->id]) }}"
    class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition duration-200">
     <div class="p-6">
         <div class="flex items-center space-x-4 mb-4">
-            {{-- <div class="flex-shrink-0">
+            <div class="flex-shrink-0">
                 @if($mitra->foto_profil)
-                    <img src="{{ Storage::url($mitra->foto_profil) }}" 
-                         alt="{{ $mitra->nama }}" 
-                         class="w-16 h-16 rounded-full object-cover">
+                    <img src="{{ asset('storage/' . $mitra->foto_profil) }}"
+                        alt="{{ $mitra->nama_lengkap }}" class="h-10 w-10 rounded-full object-cover">
                 @else
                     <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
                         <i class="fas fa-user text-gray-400 text-2xl"></i>
                     </div>
                 @endif
-            </div> --}}
+            </div>
             <div>
                 <h3 class="text-lg font-semibold text-gray-900">{{ $mitra->nama_lengkap }}</h3>
                 <p class="text-sm text-gray-500">{{ $mitra->email }}</p>
@@ -37,4 +36,4 @@
         Data tidak ditemukan
     </div>
 </div>
-@endforelse 
+@endforelse

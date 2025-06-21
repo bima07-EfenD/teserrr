@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('media_lahan');
             $table->string('surat_tanah')->nullable();
             $table->string('kontrak');
-            $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])->default('menunggu');
+            $table->enum('status', ['menunggu', 'disetujui', 'ditolak', 'nonaktif'])->default('menunggu');
             $table->timestamps();
         });
     }
@@ -35,4 +35,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('mitra');
     }
-}; 
+};

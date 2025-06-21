@@ -57,11 +57,12 @@
                         <select name="status" id="status"
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">Semua Status</option>
-                            <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui
-                            </option>
                             <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>Menunggu
                             </option>
+                            <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui
+                            </option>
                             <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                            <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
                         </select>
                     </div>
                     <div>
@@ -150,6 +151,7 @@
                                             class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                                             @if ($m->status == 'disetujui') bg-green-100 text-green-800
                                             @elseif($m->status == 'menunggu') bg-yellow-100 text-yellow-800
+                                            @elseif($m->status == 'nonaktif') bg-gray-100 text-gray-800
                                             @else bg-red-100 text-red-800 @endif">
                                             {{ ucfirst($m->status) }}
                                         </span>
@@ -169,8 +171,8 @@
                                                         d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                 </svg>
                                             </a>
-                                            <button type="button" 
-                                                onclick="openEditModal({{ $m->id }}, '{{ $m->nama_lengkap }}', '{{ $m->email }}', '{{ $m->telepon }}', '{{ $m->luas_lahan }}', '{{ $m->pohon }}', '{{ $m->provinsi }}', '{{ $m->kabupaten->id }}', '{{ $m->kecamatan }}', '{{ $m->desa }}', '{{ $m->alamat_detail }}', '{{ $m->latitude }}', '{{ $m->longitude }}')"
+                                            <button type="button"
+                                                onclick="openEditModal({{ $m->id }}, '{{ $m->nama_lengkap }}', '{{ $m->status }}')"
                                                 class="text-indigo-600 hover:text-indigo-900">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
@@ -233,7 +235,35 @@
                                 <option value="menunggu">Menunggu</option>
                                 <option value="disetujui">Disetujui</option>
                                 <option value="ditolak">Ditolak</option>
+                                <option value="nonaktif">Nonaktif</option>
                             </select>
+                        </div>
+                        <div id="penolakanFields" class="hidden space-y-4">
+                            <div>
+                                <label for="alasan_penolakan" class="block text-sm font-medium text-gray-700">Alasan</label>
+                                <select name="alasan_penolakan" id="alasan_penolakan"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                                    <option value="">-- Pilih Alasan --</option>
+                                    <!-- Options for ditolak -->
+                                    <optgroup label="Alasan Penolakan" class="penolakan-options hidden">
+                                        <option value="Data tidak valid">Data tidak valid</option>
+                                        <option value="Dokumen tidak lengkap">Dokumen tidak lengkap</option>
+                                        <option value="Tidak memenuhi syarat">Tidak memenuhi syarat</option>
+                                    </optgroup>
+                                    <!-- Options for nonaktif -->
+                                    <optgroup label="Alasan Penonaktifan" class="nonaktif-options hidden">
+                                        <option value="Melanggar kontrak">Melanggar kontrak</option>
+                                        <option value="Mitra mengundurkan diri">Mitra mengundurkan diri</option>
+                                        <option value="Melakukan kesalahan">Melakukan kesalahan</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="deskripsi_penolakan" class="block text-sm font-medium text-gray-700">Deskripsi</label>
+                                <textarea name="deskripsi_penolakan" id="deskripsi_penolakan" rows="3"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                    placeholder="Tuliskan deskripsi..."></textarea>
+                            </div>
                         </div>
                     </div>
                     <div class="mt-6 flex justify-end space-x-3">
@@ -241,7 +271,7 @@
                             class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">
                             Batal
                         </button>
-                        <button type="submit"
+                        <button type="submit" id="submitButton"
                             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             Simpan
                         </button>
@@ -251,42 +281,146 @@
         </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="flex flex-col items-center justify-center p-4">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                <p class="text-lg font-medium text-gray-900 mb-2">Mengubah Status Mitra</p>
+                <p class="text-sm text-gray-600 text-center">Mohon tunggu sebentar, sedang mengirim notifikasi email...</p>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     <script>
-        function openEditModal(id, nama, email, telepon, luasLahan, pohon, provinsi, kabupatenId, kecamatan, desa, alamat, latitude, longitude) {
+        function openEditModal(id, nama, status) {
             const modal = document.getElementById('editModal');
             const form = document.getElementById('editForm');
-            
+            const statusSelect = document.getElementById('edit_status');
+
             // Set form action
             form.action = `/owner/mitra/${id}`;
-            
+
             // Set form values
             document.getElementById('edit_nama_lengkap').value = nama;
-            
+            statusSelect.value = status;
+
+            // Disable nonaktif option if status is not disetujui
+            const nonaktifOption = statusSelect.querySelector('option[value="nonaktif"]');
+            if (status !== 'disetujui') {
+                nonaktifOption.disabled = true;
+            } else {
+                nonaktifOption.disabled = false;
+            }
+
+            // Toggle penolakan fields based on current status
+            togglePenolakanFields(status);
+
             // Show modal
             modal.classList.remove('hidden');
         }
 
         function closeEditModal() {
             const modal = document.getElementById('editModal');
+            const submitButton = document.getElementById('submitButton');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
             modal.classList.add('hidden');
+            // Reset button state
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Simpan';
+            // Sembunyikan loading jika masih terlihat
+            loadingOverlay.classList.add('hidden');
         }
 
-        // Close modal when clicking outside
-        document.getElementById('editModal').addEventListener('click', function(e) {
+        // Tutup modal jika klik luar
+        document.getElementById('editModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeEditModal();
             }
         });
 
+        // Toggle field penolakan jika status = ditolak atau nonaktif
+        function togglePenolakanFields(status) {
+            const penolakanFields = document.getElementById('penolakanFields');
+            const penolakanOptions = document.querySelector('.penolakan-options');
+            const nonaktifOptions = document.querySelector('.nonaktif-options');
+            const alasanSelect = document.getElementById('alasan_penolakan');
+            const deskripsiTextarea = document.getElementById('deskripsi_penolakan');
+
+            if (status === 'ditolak' || status === 'nonaktif') {
+                penolakanFields.classList.remove('hidden');
+
+                // Reset dan sembunyikan semua optgroup
+                penolakanOptions.classList.add('hidden');
+                nonaktifOptions.classList.add('hidden');
+
+                // Tampilkan optgroup yang sesuai
+                if (status === 'ditolak') {
+                    penolakanOptions.classList.remove('hidden');
+                    document.querySelector('label[for="alasan_penolakan"]').textContent = 'Alasan Penolakan';
+                    document.querySelector('label[for="deskripsi_penolakan"]').textContent = 'Deskripsi Penolakan';
+                    deskripsiTextarea.placeholder = 'Tuliskan deskripsi penolakan...';
+                } else {
+                    nonaktifOptions.classList.remove('hidden');
+                    document.querySelector('label[for="alasan_penolakan"]').textContent = 'Alasan Penonaktifan';
+                    document.querySelector('label[for="deskripsi_penolakan"]').textContent = 'Deskripsi Penonaktifan';
+                    deskripsiTextarea.placeholder = 'Tuliskan deskripsi penonaktifan...';
+                }
+
+                // Reset nilai select dan textarea
+                alasanSelect.value = '';
+                deskripsiTextarea.value = '';
+            } else {
+                penolakanFields.classList.add('hidden');
+                alasanSelect.value = '';
+                deskripsiTextarea.value = '';
+            }
+        }
+
+        document.getElementById('edit_status').addEventListener('change', function () {
+            togglePenolakanFields(this.value);
+        });
+
         // Handle form submission
-        document.getElementById('editForm').addEventListener('submit', function(e) {
+        document.getElementById('editForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const form = this;
             const formData = new FormData(form);
-            
+            const status = formData.get('status');
+            const submitButton = document.getElementById('submitButton');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            // Validasi tambahan untuk status ditolak dan nonaktif
+            if (status === 'ditolak' || status === 'nonaktif') {
+                const alasan = formData.get('alasan_penolakan');
+                const deskripsi = formData.get('deskripsi_penolakan');
+
+                if (!alasan || !deskripsi.trim()) {
+                    const label = status === 'ditolak' ? 'penolakan' : 'penonaktifan';
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validasi Gagal',
+                        text: `Alasan dan deskripsi ${label} wajib diisi.`,
+                    });
+                    return;
+                }
+            }
+
+            // Disable submit button dan tampilkan loading
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Menyimpan...
+            `;
+            loadingOverlay.classList.remove('hidden');
+
             fetch(form.action, {
                 method: 'POST',
                 body: formData,
@@ -311,7 +445,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
-                        text: 'Terjadi kesalahan saat memperbarui status mitra'
+                        text: data.message || 'Terjadi kesalahan saat memperbarui status mitra'
                     });
                 }
             })
@@ -321,6 +455,12 @@
                     title: 'Oops...',
                     text: 'Terjadi kesalahan saat memperbarui status mitra'
                 });
+            })
+            .finally(() => {
+                // Reset button dan sembunyikan loading
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Simpan';
+                loadingOverlay.classList.add('hidden');
             });
         });
     </script>

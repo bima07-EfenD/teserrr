@@ -77,7 +77,7 @@
                                 </svg>
                                 Cari
                             </button>
-                            <a href="{{ route('petani.laporan.laporan-mitra', $mitra) }}"
+                            <button type="reset" id="resetButton"
                                 class="px-6 py-3 rounded-xl text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 font-medium shadow-sm transition-colors duration-200 flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
@@ -85,7 +85,7 @@
                                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
                                 Reset
-                            </a>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -107,7 +107,7 @@
                             </tr>
                         </thead>
                         <tbody id="laporanList">
-                            @include('components.laporan._list', ['laporans' => $laporans])
+                            @include('components.laporan._list', ['laporans' => $laporans, 'start_index' => $laporans->firstItem()])
                         </tbody>
                     </table>
                 </div>
@@ -126,14 +126,41 @@
             const searchInput = document.getElementById('searchInput');
             const laporanList = document.getElementById('laporanList');
             const paginationContainer = document.getElementById('paginationContainer');
+            const resetButton = document.getElementById('resetButton');
+            let searchTimeout;
 
             searchForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 performSearch();
             });
 
+            // Add input event listener for real-time search
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(performSearch, 500);
+            });
+
+            // Add click event listener for reset button
+            resetButton.addEventListener('click', function() {
+                searchInput.value = ''; // Clear the search input
+                performSearch(); // Perform search to load all data
+            });
+
             function performSearch() {
                 const searchTerm = searchInput.value.trim();
+
+                // Show loading state
+                laporanList.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4">
+                            <div class="flex justify-center items-center">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                <span class="ml-2 text-gray-600">Mencari laporan...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
                 fetch(`{{ route('petani.laporan.laporan-mitra', $mitra) }}?search=${encodeURIComponent(searchTerm)}`, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'
@@ -143,6 +170,17 @@
                     .then(data => {
                         laporanList.innerHTML = data.html;
                         paginationContainer.innerHTML = data.pagination;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        laporanList.innerHTML = `
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                    Terjadi kesalahan saat melakukan pencarian
+                                </td>
+                            </tr>
+                        `;
+                        paginationContainer.innerHTML = '';
                     });
             }
         });

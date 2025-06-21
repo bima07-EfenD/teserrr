@@ -8,6 +8,7 @@ use App\Models\Mitra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Chat;
 
 class LaporanController extends Controller
 {
@@ -62,6 +63,7 @@ class LaporanController extends Controller
             'template' => 'nullable|string|max:100',
             'kegiatan_lainnya' => 'nullable|string|max:255',
             'panen_buah' => 'nullable|numeric|min:0',
+            'berat_rata_rata' => 'nullable|numeric|min:0',
             'media_foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'media_video' => 'nullable|mimes:mp4,mov,avi|max:10240'
         ]);
@@ -95,6 +97,7 @@ class LaporanController extends Controller
             'template' => $request->template,
             'kegiatan_lainnya' => $request->template === 'Kegiatan Lainnya' ? $request->kegiatan_lainnya : null,
             'panen_buah' => $request->panen_buah,
+            'berat_rata_rata' => $request->berat_rata_rata,
             'media_foto' => $mediaFotoPath,
             'media_video' => $mediaVideoPath
         ]);
@@ -104,8 +107,13 @@ class LaporanController extends Controller
     }
 
     public function show(Laporan $laporan)
+
     {
-        return view('pegawai.laporan.show', compact('laporan'));
+        // Ambil chat terkait laporan ini
+        $chats = Chat::where('laporan_id', $laporan->id)->with('sender')->latest()->get();
+
+
+        return view('pegawai.laporan.show', compact('laporan', 'chats'));
     }
 
     public function edit(Laporan $laporan)
@@ -122,11 +130,12 @@ class LaporanController extends Controller
             'tanggal_laporan' => 'required|date',
             'keterangan' => 'required|string',
             'metode' => 'required|string|max:100',
+            'berat_rata_rata' => 'nullable|numeric|min:0',
             'media_foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'media_video' => 'nullable|mimes:mp4,mov,avi|max:10240'
         ]);
 
-        $data = $request->only(['mitra_id', 'judul', 'tanggal_laporan', 'keterangan', 'metode']);
+        $data = $request->only(['mitra_id', 'judul', 'tanggal_laporan', 'keterangan', 'metode', 'berat_rata_rata']);
 
         // Upload foto jika ada
         if ($request->hasFile('media_foto')) {
@@ -179,7 +188,8 @@ class LaporanController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('keterangan', 'like', "%{$search}%");
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -216,13 +226,20 @@ class LaporanController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q->where('nama_lengkap', 'like', "%$search%")
                         ->orWhere('email', 'like', "%$search%")
-                        ->orWhere('kabupaten', 'like', "%$search%")
-                        ->orWhere('telepon', 'like', "%$search%");
+                        ->orWhereHas('kabupaten', function($q) use ($search) {
+                            $q->where('nama', 'like', "%$search%");
+                        });
                 });
             })
-            ->get();
+            ->paginate(9);
+
         $view = view('pegawai.laporan._mitra-cards', compact('mitras'))->render();
-        return response()->json(['html' => $view]);
+        $pagination = $mitras->links()->toHtml();
+
+        return response()->json([
+            'html' => $view,
+            'pagination' => $pagination
+        ]);
     }
 
     public function searchMitraIndex(Request $request)
@@ -258,11 +275,15 @@ class LaporanController extends Controller
 
         // Untuk filter/pencarian AJAX
         if ($request->ajax()) {
-            $view = view('pegawai.laporan._list', compact('laporans'))->render();
+            $view = view('pegawai.laporan._list', [
+                'laporans' => $laporans,
+                'start_index' => $laporans->firstItem()
+            ])->render();
             $pagination = $laporans->links()->toHtml();
             return response()->json([
                 'html' => $view,
-                'pagination' => $pagination
+                'pagination' => $pagination,
+                'start_index' => $laporans->firstItem()
             ]);
         }
 

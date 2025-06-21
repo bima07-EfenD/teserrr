@@ -118,7 +118,7 @@
                         <h3 class="text-lg font-semibold text-gray-900">Statistik Pengajuan</h3>
                         <div class="flex items-center space-x-2">
                             <span class="inline-block w-3 h-3 bg-blue-600 rounded-full"></span>
-                            <span class="text-sm text-gray-500">6 Bulan Terakhir</span>
+                            <span class="text-sm text-gray-500">1 Bulan Terakhir</span>
                         </div>
                     </div>
                     <div class="mt-6" style="height: 300px;">
@@ -132,7 +132,7 @@
                         <h3 class="text-lg font-semibold text-gray-900">Statistik Laporan</h3>
                         <div class="flex items-center space-x-2">
                             <span class="inline-block w-3 h-3 bg-indigo-600 rounded-full"></span>
-                            <span class="text-sm text-gray-500">6 Bulan Terakhir</span>
+                            <span class="text-sm text-gray-500">7 Hari Terakhir</span>
                         </div>
                     </div>
                     <div class="mt-6" style="height: 300px;">
@@ -161,11 +161,8 @@
                                                 {{ $pengajuan->kabupaten->nama ?? '-' }}
                                             </p>
                                         </div>
-                                        <span class="px-3 py-1 rounded-full text-sm font-medium
-                                            @if ($pengajuan->status == 'disetujui') bg-green-100 text-green-800
-                                            @elseif($pengajuan->status == 'menunggu') bg-yellow-100 text-yellow-800
-                                            @else bg-red-100 text-red-800 @endif">
-                                            {{ ucfirst($pengajuan->status) }}
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                            Menunggu
                                         </span>
                                     </div>
                                     <div class="mt-4 flex items-center text-sm text-gray-500">
@@ -178,7 +175,7 @@
                             </a>
                         @empty
                             <div class="p-6 text-center text-gray-500">
-                                Belum ada pengajuan baru
+                                Belum ada pengajuan yang menunggu
                             </div>
                         @endforelse
                     </div>
@@ -258,47 +255,13 @@
                     plugins: {
                         legend: {
                             display: false
-                        },
-                        tooltip: {
-                            backgroundColor: '#ffffff',
-                            titleColor: '#1f2937',
-                            bodyColor: '#1f2937',
-                            borderColor: '#e5e7eb',
-                            borderWidth: 1,
-                            padding: 12,
-                            displayColors: false,
-                            callbacks: {
-                                title: function(context) {
-                                    return context[0].label;
-                                },
-                                label: function(context) {
-                                    return 'Jumlah: ' + context.raw;
-                                }
-                            }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                stepSize: 1,
-                                font: {
-                                    size: 12
-                                }
-                            },
-                            grid: {
-                                display: true,
-                                color: '#f3f4f6'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 12
-                                }
+                                stepSize: 1
                             }
                         }
                     }
@@ -331,47 +294,13 @@
                     plugins: {
                         legend: {
                             display: false
-                        },
-                        tooltip: {
-                            backgroundColor: '#ffffff',
-                            titleColor: '#1f2937',
-                            bodyColor: '#1f2937',
-                            borderColor: '#e5e7eb',
-                            borderWidth: 1,
-                            padding: 12,
-                            displayColors: false,
-                            callbacks: {
-                                title: function(context) {
-                                    return context[0].label;
-                                },
-                                label: function(context) {
-                                    return 'Jumlah: ' + context.raw;
-                                }
-                            }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                stepSize: 1,
-                                font: {
-                                    size: 12
-                                }
-                            },
-                            grid: {
-                                display: true,
-                                color: '#f3f4f6'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 12
-                                }
+                                stepSize: 1
                             }
                         }
                     }

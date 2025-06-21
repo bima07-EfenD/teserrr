@@ -14,7 +14,7 @@ class MitraController extends Controller
 {
     public function index()
     {
-        $mitras = Mitra::where('user_id', Auth::id())->paginate(10);
+        $mitras = Mitra::where('user_id', Auth::id())->paginate(6);
         $kabupatenList = Mitra::where('user_id', Auth::id())
             ->with('kabupaten')
             ->get()
@@ -113,9 +113,9 @@ class MitraController extends Controller
         // Ambil data mitra dan pastikan milik petani yang login
         $mitra = Mitra::where('id', $id)
                       ->where('user_id', Auth::id())
-                      ->firstOrFail(); // akan throw 404 jika tidak ditemukan
+                      ->firstOrFail();
 
-        return view('petani.mitra.show', compact('mitra'));
+        return view('components.mitra._detail', compact('mitra'));
     }
 
     public function search(Request $request)

@@ -111,8 +111,8 @@
                                 @if ($laporan->media_foto)
                                     <div class="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm group">
                                         <div class="relative aspect-video overflow-hidden">
-                                            <img src="{{ Storage::url($laporan->media_foto) }}" alt="Foto Laporan"
-                                                class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                                            <img src="{{ asset('storage/' . $laporan->media_foto) }}" alt="Foto Laporan"
+                                                class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onclick="openMediaModal('{{ asset('storage/' . $laporan->media_foto) }}', 'image')">
                                         </div>
                                         <div class="p-4 bg-white">
                                             <p class="text-sm text-gray-500">Foto dokumentasi</p>
@@ -120,10 +120,10 @@
                             </div>
                         @endif
                                 @if ($laporan->media_video)
-                                    <div class="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                                    <div class="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm group cursor-pointer" onclick="openMediaModal('{{ asset('storage/' . $laporan->media_video) }}', 'video')">
                                         <div class="relative aspect-video overflow-hidden">
-                                            <video controls class="w-full h-full object-cover">
-                                    <source src="{{ Storage::url($laporan->media_video) }}" type="video/mp4">
+                                            <video controls class="w-full h-full object-cover video-modal-player">
+                                    <source src="{{ asset('storage/' . $laporan->media_video) }}" type="video/mp4">
                                     Browser Anda tidak mendukung tag video.
                                 </video>
                                         </div>
@@ -135,7 +135,60 @@
                     </div>
                 </div>
             @endif
+
                 </div>
+                <div class="mb-10">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Forum Chat
+                    </h2>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <div id="chat-container" class="flex flex-col h-[500px] border border-gray-200 rounded-lg">
+                            <!-- Chat messages -->
+                            <div id="chat-box" class="flex-1 overflow-y-auto p-4">
+                                @forelse ($chats as $chat)
+                                <div class="mb-4">
+                                    <div class="flex items-center">
+                                        <x-chat-avatar :user="$chat->sender" />
+                                        <div class="ml-4">
+                                            <div class="flex items-center gap-2">
+                                                <p class="text-sm font-medium text-gray-800 cursor-help chat-sender-name" data-phone-number="{{ $chat->sender->no_telepon ?? '-' }}">{{ $chat->sender->name ?? 'Pengguna Tidak Dikenal' }}</p>
+                                                <span class="px-2 py-0.5 text-xs font-medium rounded-full
+                                                    {{ $chat->sender->role === 'pegawai' ? 'bg-blue-100 text-blue-800' :
+                                                       ($chat->sender->role === 'petani' ? 'bg-red-100 text-red-400' :
+                                                       'bg-green-100 text-green-700') }}">
+                                                    {{ ucfirst($chat->sender->role) }}
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-gray-500">{{ $chat->created_at->format('H:i') }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 bg-gray-100 rounded-lg p-3">
+                                        <p class="text-sm text-gray-800">{{ $chat->message }}</p>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center text-gray-500 mt-10">Belum ada percakapan. Mulailah chat pertama Anda.</div>
+                            @endforelse
+                            </div>
+
+                            <!-- Chat input -->
+                            <form method="POST" action="{{ route('chat.store') }}" class="p-4 border-t border-gray-200">
+                                @csrf
+                                <input type="hidden" name="laporan_id" value="{{ $laporan->id }}">
+                                <input type="hidden" name="receiver_id" value="{{ Auth::id() == $laporan->pegawai->id ? $laporan->mitra->id : $laporan->pegawai->id }}">
+                                <div class="flex items-center">
+                                    <textarea name="message" class="flex-1 border border-gray-300 rounded-lg p-2" rows="1" placeholder="Tulis pesan...">{{ old('message') }}</textarea>
+                                    <button type="submit" class="ml-2 px-4 py-2 bg-indigo-500 text-white rounded-lg">Kirim</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
 
                 <!-- Right column - Mitra info & actions -->
                 <div class="lg:col-span-1 order-1 lg:order-2">
@@ -214,4 +267,229 @@
         </div>
     </div>
 </div>
+
+    <!-- Media Preview Modal -->
+    <div id="mediaModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
+        <div id="modalInnerWrapper" class="relative w-full max-w-4xl mx-4">
+            <button type="button" onclick="closeMediaModal()" class="absolute -top-12 right-0 text-white hover:text-gray-300">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <div id="mediaContent" class="bg-white rounded-lg overflow-hidden">
+                <div id="mediaPreview" class="w-full">
+                    <!-- Content will be dynamically inserted here -->
+                </div>
+                <div class="p-4 bg-white flex justify-between items-center">
+                    <button type="button" onclick="closeMediaModal()" class="px-4 py-2 text-gray-700 hover:text-gray-900">
+                        Tutup
+                    </button>
+                    <a id="downloadMediaBtn" href="#" download class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
+
+@push('scripts')
+<style>
+    /* Style for video player in modal to ensure interactivity */
+    .video-modal-player {
+        position: relative;
+        pointer-events: auto; /* Ensure clicks are not blocked */
+        touch-action: auto; /* Ensures touch gestures (like seeking) are responsive */
+        user-select: auto; /* Prevents text selection from interfering with dragging */
+    }
+</style>
+<script>
+    function openMediaModal(url, type) {
+        const modal = document.getElementById('mediaModal');
+        const modalInnerWrapper = document.getElementById('modalInnerWrapper');
+        const mediaContent = document.getElementById('mediaContent');
+        const preview = document.getElementById('mediaPreview');
+        const downloadBtn = document.getElementById('downloadMediaBtn');
+
+        // Set download link
+        downloadBtn.href = url;
+
+        // Clear previous content
+        preview.innerHTML = '';
+
+        // Ensure inner wrapper and its children are interactive
+        if (modalInnerWrapper) {
+            modalInnerWrapper.style.zIndex = '100'; // Ensure it's above the backdrop
+            modalInnerWrapper.style.pointerEvents = 'auto';
+        }
+        if (mediaContent) {
+            mediaContent.style.pointerEvents = 'auto';
+        }
+
+        // Add new content based on type
+        if (type === 'video') {
+            const video = document.createElement('video');
+            video.className = 'w-full video-modal-player';
+            video.style.maxHeight = '70vh';
+            video.setAttribute('playsinline', '');
+            video.setAttribute('controls', ''); // Ensure native controls are present
+
+            const source = document.createElement('source');
+            source.src = url;
+            source.type = 'video/' + url.split('.').pop();
+
+            video.appendChild(source);
+            preview.appendChild(video);
+
+        } else {
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = 'w-full';
+            img.style.maxHeight = '70vh';
+            img.style.objectFit = 'contain';
+            preview.appendChild(img);
+        }
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMediaModal() {
+        const modal = document.getElementById('mediaModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('mediaModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeMediaModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('mediaModal').classList.contains('hidden')) {
+            closeMediaModal();
+        }
+    });
+
+    // Tooltip for phone number
+    document.querySelectorAll('.chat-sender-name').forEach(nameElement => {
+        let tooltipTimeout;
+        let tooltipElement = null;
+
+        nameElement.addEventListener('mouseenter', () => {
+            // Clear any existing timeout to prevent flickering if quickly re-hovering
+            clearTimeout(tooltipTimeout);
+
+            // Create tooltip element if it doesn't exist
+            if (!tooltipElement) {
+                tooltipElement = document.createElement('div');
+                tooltipElement.classList.add(
+                    'absolute',
+                    'px-3',
+                    'py-2',
+                    'bg-gray-900',
+                    'text-white',
+                    'text-xs',
+                    'rounded-lg',
+                    'opacity-0',
+                    'transition-opacity',
+                    'duration-200',
+                    'z-50',
+                    'pointer-events-none',
+                    'max-w-xs'
+                );
+                // Create text element
+                const textSpan = document.createElement('span');
+                tooltipElement.appendChild(textSpan);
+
+                // Add arrow
+                const arrow = document.createElement('div');
+                arrow.classList.add(
+                    'absolute',
+                    'top-full',
+                    'transform',
+                    'border-4',
+                    'border-transparent',
+                    'border-t-gray-900'
+                );
+                tooltipElement.appendChild(arrow);
+                document.body.appendChild(tooltipElement);
+            }
+
+            // Get phone number from data attribute and set text content on the span
+            const phoneNumber = nameElement.dataset.phoneNumber || '-';
+            tooltipElement.querySelector('span').textContent = `Nomor telepon: ${phoneNumber}`;
+
+            // Position the tooltip
+            const nameRect = nameElement.getBoundingClientRect();
+            const scrollX = window.scrollX || window.pageXOffset;
+            const scrollY = window.scrollY || window.pageYOffset;
+
+            // Temporarily make it visible to get its width/height
+            tooltipElement.style.opacity = '0';
+            tooltipElement.style.visibility = 'visible';
+            tooltipElement.style.left = `0px`; // Initial position for calculation
+            tooltipElement.style.top = `0px`; // Initial position for calculation
+
+            const tooltipWidth = tooltipElement.offsetWidth;
+            const tooltipHeight = tooltipElement.offsetHeight;
+
+            // Calculate desired top position (30px buffer above the name)
+            const topPosition = nameRect.top + scrollY - tooltipHeight - 30;
+
+            // Calculate desired left position to center the tooltip over the name
+            let leftPosition = nameRect.left + scrollX + (nameRect.width / 2) - (tooltipWidth / 2);
+
+            // Adjust left position to ensure tooltip stays within viewport
+            const viewportPadding = 10; // Small padding from viewport edges
+            if (leftPosition < viewportPadding) {
+                leftPosition = viewportPadding; // Nudge right if it goes off left edge
+            } else if ((leftPosition + tooltipWidth) > (window.innerWidth - viewportPadding)) {
+                leftPosition = window.innerWidth - tooltipWidth - viewportPadding; // Nudge left if it goes off right edge
+            }
+
+            // Apply final positions
+            tooltipElement.style.top = `${topPosition}px`;
+            tooltipElement.style.left = `${leftPosition}px`;
+            tooltipElement.style.opacity = '1';
+
+            // Update arrow position to point to the center of the name from the tooltip's new position
+            const arrowElement = tooltipElement.querySelector('.border-t-gray-900');
+            if (arrowElement) {
+                // Calculate the center of the name relative to the document
+                const nameCenterAbsolute = nameRect.left + scrollX + (nameRect.width / 2);
+                // Calculate the arrow's 'left' property relative to the tooltip's own 'left' property
+                // This means: (absolute center of name) - (absolute left of tooltip)
+                const arrowOffsetFromTooltipLeft = nameCenterAbsolute - leftPosition;
+                arrowElement.style.left = `${arrowOffsetFromTooltipLeft}px`;
+                arrowElement.style.transform = 'translateX(-50%)'; // Keep it centered relative to its calculated 'left'
+            }
+        });
+
+        nameElement.addEventListener('mouseleave', () => {
+            // Use a timeout to delay removal, preventing flickering on quick re-hover
+            tooltipTimeout = setTimeout(() => {
+                if (tooltipElement) {
+                    tooltipElement.style.opacity = '0';
+                    tooltipElement.style.visibility = 'hidden';
+                }
+            }, 100);
+        });
+
+        // Cleanup on tooltip element itself to avoid memory leaks if parent removed (e.g., chat message disappears)
+        nameElement.addEventListener('beforeunload', () => {
+            if (tooltipElement && tooltipElement.parentNode) {
+                tooltipElement.parentNode.removeChild(tooltipElement);
+            }
+        });
+    });
+
+</script>
+@endpush

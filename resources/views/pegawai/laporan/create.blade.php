@@ -142,16 +142,33 @@
                             </div>
 
                             <div id="harvest-amount-container" class="hidden">
-                                <label for="panen_buah" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Panen (kg)</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                                        </svg>
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex flex-col">
+                                        <label for="panen_buah" class="block text-sm font-medium text-gray-700 mb-2">Jumlah Panen (kg)</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                                </svg>
+                                            </div>
+                                            <input type="number" step="0.01" name="panen_buah" id="panen_buah" value="{{ old('panen_buah') }}"
+                                                class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition h-12"
+                                                placeholder="Masukkan jumlah panen dalam kg">
+                                        </div>
                                     </div>
-                                    <input type="number" step="0.01" name="panen_buah" id="panen_buah" value="{{ old('panen_buah') }}"
-                                        class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition"
-                                        placeholder="Masukkan jumlah panen dalam kg">
+                                    <div class="flex flex-col">
+                                        <label for="berat_rata_rata" class="block text-sm font-medium text-gray-700 mb-2">Berat Rata-rata Alpukat (kg)</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z" />
+                                                </svg>
+                                            </div>
+                                            <input type="number" step="0.01" name="berat_rata_rata" id="berat_rata_rata" value="{{ old('berat_rata_rata') }}"
+                                                class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition h-12"
+                                                placeholder="Masukkan berat rata-rata alpukat dalam kg">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -518,6 +535,25 @@
                 harvestAmountContainer.classList.add('hidden');
             }
         });
+
+        // Tampilkan input panen & berat rata-rata jika kegiatan == "Panen Buah"
+        function toggleHarvestFields() {
+            const kegiatan = document.getElementById('template');
+            const harvestContainer = document.getElementById('harvest-amount-container');
+            if (!kegiatan || !harvestContainer) return;
+            if (kegiatan.value.toLowerCase() === 'panen buah') {
+                harvestContainer.classList.remove('hidden');
+            } else {
+                harvestContainer.classList.add('hidden');
+            }
+        }
+        // Jalankan saat halaman load
+        toggleHarvestFields();
+        // Jalankan saat select berubah
+        const kegiatan = document.getElementById('template');
+        if (kegiatan) {
+            kegiatan.addEventListener('change', toggleHarvestFields);
+        }
     });
 </script>
 @endpush

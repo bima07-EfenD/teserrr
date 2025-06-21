@@ -12,24 +12,24 @@ class UserSeeder extends Seeder
     {
         DB::table('users')->insert([
             [
-                'name' => 'Owner Demo',
-                'email' => 'owner@tas.test',
+                'name' => 'Makruf Mulyono',
+                'email' => 'tanialpukatsidorejo@gmail.com',
                 'password' => bcrypt('password'),
                 'role' => 'owner',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Pegawai Demo',
-                'email' => 'pegawai@tas.test',
+                'name' => 'Achamad Loco Dzulqarnain',
+                'email' => 'aandzulqarnain1905@gmail.com',
                 'password' => bcrypt('password'),
                 'role' => 'pegawai',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Petani Demo',
-                'email' => 'petani@tas.test',
+                'name' => 'Agus Suprapno',
+                'email' => 'bimakampret07@gmail.com',
                 'password' => bcrypt('password'),
                 'role' => 'petani',
                 'created_at' => now(),

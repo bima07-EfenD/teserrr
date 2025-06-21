@@ -15,7 +15,7 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Statistik Pengajuan
         $totalPengajuan = Mitra::where('user_id', $user->id)->count();
         $pengajuanDiterima = Mitra::where('user_id', $user->id)
@@ -78,14 +78,20 @@ class DashboardController extends Controller
             ]
         ];
 
+        // Mitra Disetujui (untuk Grafik Panen Buah)
+        $approvedMitras = Mitra::where('user_id', $user->id)
+            ->where('status', 'disetujui')
+            ->with('kabupaten')
+            ->orderBy('created_at', 'desc')
+            ->paginate(5);
+
         // Laporan Terkait Mitra
         $laporanTerbaru = Laporan::whereHas('mitra', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->with(['mitra', 'pegawai'])
             ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get();
+            ->paginate(5);
 
         return view('petani.dashboard', compact(
             'totalPengajuan',
@@ -96,6 +102,7 @@ class DashboardController extends Controller
             'bulan',
             'totalPengajuanPerBulan',
             'statusPengajuan',
+            'approvedMitras',
             'laporanTerbaru'
         ));
     }

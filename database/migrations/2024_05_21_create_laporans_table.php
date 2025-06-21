@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('metode');
             $table->string('template')->nullable();
             $table->decimal('panen_buah', 10, 2)->nullable();
+            $table->float('berat_rata_rata')->nullable();
             $table->string('media_foto')->nullable();
             $table->string('media_video')->nullable();
             $table->timestamps();

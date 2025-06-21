@@ -70,138 +70,20 @@
             </div>
 
             <!-- Main content layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-8">
-                <!-- Left column - Main report content -->
-                <div class="lg:col-span-2 order-2 lg:order-1">
-                    <!-- Report content -->
-                    <div class="mb-10">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Detail Laporan
-                        </h2>
-                        <div class="prose max-w-none bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                            <div class="text-gray-700 text-lg leading-relaxed">
-                                @include('components.laporan._detail', ['laporan' => $laporan])
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Media Gallery -->
-                    @if ($laporan->media_foto || $laporan->media_video)
-                        <div class="mb-10">
-                            <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                Dokumentasi
-                            </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                @if ($laporan->media_foto)
-                                    <div class="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm group">
-                                        <div class="relative aspect-video overflow-hidden">
-                                            <img src="{{ Storage::url($laporan->media_foto) }}" alt="Foto Laporan"
-                                                class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-                                        </div>
-                                        <div class="p-4 bg-white">
-                                            <p class="text-sm text-gray-500">Foto dokumentasi</p>
-                                        </div>
-                            </div>
-                        @endif
-                                @if ($laporan->media_video)
-                                    <div class="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                                        <div class="relative aspect-video overflow-hidden">
-                                            <video controls class="w-full h-full object-cover">
-                                    <source src="{{ Storage::url($laporan->media_video) }}" type="video/mp4">
-                                    Browser Anda tidak mendukung tag video.
-                                </video>
-                                        </div>
-                                        <div class="p-4 bg-white">
-                                            <p class="text-sm text-gray-500">Video dokumentasi</p>
-                                        </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @endif
-                </div>
-
-                <!-- Right column - Mitra info & actions -->
-                <div class="lg:col-span-1 order-1 lg:order-2">
-                    <!-- Mitra Card -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100 sticky top-4">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            Data Mitra
-                        </h2>
-
-                        <div class="border-t border-gray-100 pt-4">
-                            <h3 class="text-lg font-medium text-gray-800 mb-2">
-                                {{ $laporan->mitra->nama_lengkap }}
-                            </h3>
-
-                            <ul class="space-y-3 mt-4">
-                                <li class="flex">
-                                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="text-xs text-gray-500 font-medium">Email</p>
-                                        <p class="text-sm text-gray-800">{{ $laporan->mitra->email }}</p>
-                                    </div>
-                                </li>
-
-                                <li class="flex">
-                                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="text-xs text-gray-500 font-medium">Telepon</p>
-                                        <p class="text-sm text-gray-800">{{ $laporan->mitra->telepon }}</p>
-                                    </div>
-                                </li>
-
-                                <li class="flex">
-                                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="text-xs text-gray-500 font-medium">Lokasi</p>
-                                        <p class="text-sm text-gray-800">{{ $laporan->mitra->kabupaten->nama }}</p>
-                                    </div>
-                                </li>
-                                <li class="flex">
-                                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="text-xs text-gray-500 font-medium">Luas Lahan</p>
-                                        <p class="text-sm text-gray-800">{{ $laporan->mitra->luas_lahan }} m<sup>2</sup></p>
-                                    </div>
-                                </li>
-                            </ul>
-                    </div>
-
-                        <!-- Action buttons -->
-                        <div class="mt-8 space-y-3">
-                            @include('components.laporan._action-buttons', ['laporan' => $laporan])
+            <div class="lg:col-span-2 order-2 lg:order-1">
+                <!-- Detail Laporan -->
+                <div class="mb-10">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Detail Laporan
+                    </h2>
+                    <div class="prose max-w-none bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                        <div class="text-gray-700 text-lg leading-relaxed">
+                            @include('components.laporan._detail', ['laporan' => $laporan])
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
+
 @endsection

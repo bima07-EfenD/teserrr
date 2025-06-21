@@ -1,12 +1,12 @@
 @forelse($mitras as $mitra)
-<a href="{{ route('owner.laporan.index', ['mitra_id' => $mitra->id]) }}" 
+<a href="{{ route('owner.laporan.index', ['mitra_id' => $mitra->id]) }}"
    class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition duration-200">
     <div class="p-6">
         <div class="flex items-center space-x-4 mb-4">
             {{-- <div class="flex-shrink-0">
                 @if($mitra->foto_profil)
-                    <img src="{{ Storage::url($mitra->foto_profil) }}" 
-                         alt="{{ $mitra->nama }}" 
+                    <img src="{{ asset('storage/' . $mitra->foto_profil) }}"
+                         alt="{{ $mitra->nama }}"
                          class="w-16 h-16 rounded-full object-cover">
                 @else
                     <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
@@ -37,4 +37,4 @@
         Data tidak ditemukan
     </div>
 </div>
-@endforelse 
+@endforelse
