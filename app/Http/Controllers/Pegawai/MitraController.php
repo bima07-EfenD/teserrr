@@ -29,8 +29,14 @@ class MitraController extends Controller
             });
         }
 
+        // Filter berdasarkan kabupaten
+        if ($request->filled('kabupaten')) {
+            $query->where('kabupaten_id', $request->kabupaten);
+        }
+
         $mitras = $query->paginate(10)->withQueryString();
-        return view('pegawai.mitra.index', compact('mitras'));
+        $kabupaten = \App\Models\Kabupaten::orderBy('nama')->get();
+        return view('pegawai.mitra.index', compact('mitras', 'kabupaten'));
     }
 
     public function create()
@@ -139,32 +145,38 @@ class MitraController extends Controller
 
     public function search(Request $request)
     {
-        $search = $request->input('search');
-        $kabupatenList = Mitra::with('kabupaten')
-            ->get()
-            ->pluck('kabupaten.nama')
-            ->unique()
-            ->sort()
-            ->values();
-        $kabupaten = $kabupatenList;
+        $query = Mitra::with('kabupaten')
+            ->where('status', 'disetujui');
 
-        $mitras = Mitra::where('status', 'disetujui')
-            ->where(function($query) use ($search) {
-                $query->where('nama_lengkap', 'like', "%{$search}%")
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($sub) use ($search) {
+                $sub->where('nama_lengkap', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('kabupaten', 'like', "%{$search}%")
-                    ->orWhere('telepon', 'like', "%{$search}%");
-            })
-            ->get();
+                    ->orWhereHas('kabupaten', function($q) use ($search) {
+                        $q->where('nama', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('kabupaten')) {
+            $query->where('kabupaten_id', $request->kabupaten);
+        }
+
+        $mitras = $query->latest()->paginate(10);
 
         if ($request->ajax()) {
-            $html = view('pegawai.laporan._mitra_list', compact('mitras'))->render();
+            $html = view('pegawai.mitra._list', compact('mitras'))->render();
+            $pagination = $mitras->links()->toHtml();
+
             return response()->json([
-                'html' => $html
+                'html' => $html,
+                'pagination' => $pagination
             ]);
         }
 
-        return view('pegawai.laporan.index', compact('mitras'));
+        $kabupaten = \App\Models\Kabupaten::orderBy('nama')->get();
+        return view('pegawai.mitra.index', compact('mitras', 'kabupaten'));
     }
 
     public function updateStatus(Request $request, Mitra $mitra)

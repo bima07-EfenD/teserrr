@@ -54,8 +54,6 @@ class PegawaiController extends Controller
     public function update(Request $request, User $pegawai)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $pegawai->id,
             'status_akun' => 'required|boolean',
         ]);
 
@@ -64,7 +62,7 @@ class PegawaiController extends Controller
         $pegawai->update($validated);
 
         return redirect()->route('owner.pegawai.show', $pegawai)
-            ->with('success', 'Data pegawai berhasil diperbarui');
+            ->with('success', 'Status pegawai berhasil diperbarui');
     }
 
     public function destroy(User $pegawai)
@@ -74,4 +72,4 @@ class PegawaiController extends Controller
         return redirect()->route('owner.pegawai.index')
             ->with('success', 'Pegawai berhasil dihapus');
     }
-} 
+}

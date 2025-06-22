@@ -89,7 +89,9 @@
             <!-- Laporan Terbaru -->
             <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Laporan Terbaru</h3>
-                <div class="overflow-x-auto">
+
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -100,23 +102,29 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($laporanTerbaru as $laporan)
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50 cursor-pointer">
                                     <td class="px-4 py-3 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-8 w-8 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
-                                                {{ strtoupper(substr($laporan->mitra->nama_lengkap ?? '', 0, 1)) }}
+                                        <a href="{{ route('pegawai.laporan.show', $laporan) }}" class="block">
+                                            <div class="flex items-center">
+                                                <div class="h-8 w-8 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
+                                                    {{ strtoupper(substr($laporan->mitra->nama_lengkap ?? '', 0, 1)) }}
+                                                </div>
+                                                <div class="ml-3">
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        {{ $laporan->mitra->nama_lengkap ?? 'Mitra tidak ditemukan' }}</div>
+                                                </div>
                                             </div>
-                                            <div class="ml-3">
-                                                <div class="text-sm font-medium text-gray-900">
-                                                    {{ $laporan->mitra->nama_lengkap ?? 'Mitra tidak ditemukan' }}</div>
-                                            </div>
-                                        </div>
+                                        </a>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
-                                        {{ \Illuminate\Support\Str::limit($laporan->judul, 20) }}
+                                        <a href="{{ route('pegawai.laporan.show', $laporan) }}" class="block">
+                                            {{ \Illuminate\Support\Str::limit($laporan->judul, 20) }}
+                                        </a>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $laporan->created_at ? $laporan->created_at->format('d M Y') : '-' }}
+                                        <a href="{{ route('pegawai.laporan.show', $laporan) }}" class="block">
+                                            {{ $laporan->created_at ? $laporan->created_at->format('d M Y') : '-' }}
+                                        </a>
                                     </td>
                                 </tr>
                             @empty
@@ -129,12 +137,52 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Mobile Card View -->
+                <div class="md:hidden">
+                    <div class="space-y-3">
+                        @forelse($laporanTerbaru as $laporan)
+                            <a href="{{ route('pegawai.laporan.show', $laporan) }}" class="block">
+                                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
+                                    <div class="flex items-center mb-3">
+                                        <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 font-semibold mr-3">
+                                            {{ strtoupper(substr($laporan->mitra->nama_lengkap ?? '', 0, 1)) }}
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-sm font-semibold text-gray-900">
+                                                {{ $laporan->mitra->nama_lengkap ?? 'Mitra tidak ditemukan' }}
+                                            </h4>
+                                            <p class="text-xs text-gray-500">
+                                                {{ $laporan->created_at ? $laporan->created_at->format('d M Y') : '-' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm text-gray-700">
+                                        <p class="font-medium">Judul:</p>
+                                        <p class="text-gray-600">{{ \Illuminate\Support\Str::limit($laporan->judul, 50) }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="text-center py-8">
+                                <div class="text-gray-400 mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <p class="text-gray-500">Belum ada laporan</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
             </div>
 
             <!-- Statistik per Kabupaten -->
             <div class="bg-white rounded-2xl shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Statistik per Kabupaten</h3>
-                <div class="overflow-x-auto">
+
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -144,12 +192,16 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($mitraPerKabupaten as $stat)
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50 cursor-pointer">
                                     <td class="px-4 py-3 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $stat->kabupaten->nama }}</div>
+                                        <a href="{{ route('pegawai.mitra.index', ['kabupaten' => $stat->kabupaten_id]) }}" class="block">
+                                            <div class="text-sm text-gray-900">{{ $stat->kabupaten->nama }}</div>
+                                        </a>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $stat->total }}</div>
+                                        <a href="{{ route('pegawai.mitra.index', ['kabupaten' => $stat->kabupaten_id]) }}" class="block">
+                                            <div class="text-sm text-gray-900">{{ $stat->total }}</div>
+                                        </a>
                                     </td>
                                 </tr>
                             @empty
@@ -161,6 +213,46 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="md:hidden">
+                    <div class="space-y-3">
+                        @forelse($mitraPerKabupaten as $stat)
+                            <a href="{{ route('pegawai.mitra.index', ['kabupaten' => $stat->kabupaten_id]) }}" class="block">
+                                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <div class="h-10 w-10 rounded-full bg-gradient-to-r from-green-100 to-blue-100 flex items-center justify-center text-green-600 font-semibold mr-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-sm font-semibold text-gray-900">{{ $stat->kabupaten->nama }}</h4>
+                                                <p class="text-xs text-gray-500">Kabupaten</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-lg font-bold text-blue-600">{{ $stat->total }}</p>
+                                            <p class="text-xs text-gray-500">Mitra</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="text-center py-8">
+                                <div class="text-gray-400 mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <p class="text-gray-500">Belum ada data mitra</p>
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
         </div>

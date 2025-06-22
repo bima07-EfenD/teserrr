@@ -37,6 +37,32 @@
                     {{ $pegawai->email }}
                 </dd>
             </div>
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">
+                    Nomor Telepon
+                </dt>
+                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    <div class="flex items-center space-x-2">
+                        <p class="text-sm text-gray-900" id="phoneNumber">{{ $pegawai->no_telepon ?? '-' }}</p>
+                        @if($pegawai->no_telepon)
+                            <button id="copyPhoneButton"
+                                class="text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                                title="Salin nomor telepon">
+                                <svg id="iconCopy" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                </svg>
+                                <svg id="iconCheck" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                            </button>
+                        @endif
+                    </div>
+                </dd>
+            </div>
             <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500">
                     Terdaftar Pada
@@ -72,4 +98,46 @@
         Edit
     </a>
 </div>
-@endsection 
+
+<script>
+function copyPhoneNumber() {
+    const phone = document.getElementById('phoneNumber');
+    if (!phone) {
+        console.error('Elemen dengan ID "phoneNumber" tidak ditemukan.');
+        return;
+    }
+    const phoneNumberText = phone.innerText;
+    navigator.clipboard.writeText(phoneNumberText)
+        .then(function() {
+            console.log('Nomor telepon berhasil disalin!');
+            const iconCopy = document.getElementById('iconCopy');
+            const iconCheck = document.getElementById('iconCheck');
+
+            if (iconCopy && iconCheck) {
+                iconCopy.classList.add('hidden');
+                iconCheck.classList.remove('hidden');
+                setTimeout(() => {
+                    iconCopy.classList.remove('hidden');
+                    iconCheck.classList.add('hidden');
+                }, 5000); // 5 seconds
+            } else {
+                console.warn('Ikon salin/centang tidak ditemukan.');
+            }
+        })
+        .catch(function(err) {
+            console.error('Gagal menyalin nomor telepon:', err);
+            alert(
+                'Gagal menyalin nomor telepon. Pastikan browser Anda mendukung fitur ini dan izinkan akses clipboard.');
+        });
+}
+window.copyPhoneNumber = copyPhoneNumber;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Script for copy phone number
+    const copyPhoneButton = document.getElementById('copyPhoneButton');
+    if (copyPhoneButton) {
+        copyPhoneButton.addEventListener('click', copyPhoneNumber);
+    }
+});
+</script>
+@endsection

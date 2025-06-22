@@ -35,14 +35,14 @@ class LaporanController extends Controller
         }
 
         $laporans = $query->latest()->paginate(6);
-        $mitras = Mitra::where('status', 'disetujui')->get();
+        $mitras = Mitra::where('status', 'disetujui')->paginate(6);
 
         return view('pegawai.laporan.index', compact('laporans', 'mitras', 'selectedMitra'));
     }
 
     public function create(Request $request)
     {
-        $mitras = Mitra::where('status', 'disetujui')->get();
+        $mitras = Mitra::where('status', 'disetujui')->paginate(6);
 
         if ($request->has('mitra_id')) {
             $selectedMitra = Mitra::findOrFail($request->mitra_id);
@@ -261,7 +261,7 @@ class LaporanController extends Controller
             $query->where('mitra_id', $request->mitra_id);
         }
 
-        $laporans = $query->latest()->paginate(10);
+        $laporans = $query->latest()->paginate(6);
 
         if ($request->ajax()) {
             $view = view('pegawai.laporan._list', compact('laporans'))->render();
@@ -278,7 +278,7 @@ class LaporanController extends Controller
 
     public function selectMitra()
     {
-        $mitras = Mitra::where('status', 'disetujui')->get();
+        $mitras = Mitra::where('status', 'disetujui')->paginate(6);
         return view('pegawai.laporan.select-mitra', compact('mitras'));
     }
 
@@ -295,7 +295,7 @@ class LaporanController extends Controller
                         });
                 });
             })
-            ->paginate(9);
+            ->paginate(6);
 
         $view = view('pegawai.laporan._mitra-cards', compact('mitras'))->render();
         $pagination = $mitras->links()->toHtml();
@@ -316,15 +316,22 @@ class LaporanController extends Controller
                                 $q->where('nama', 'like', '%' . $request->search . '%');
                             });
                       })
-                      ->get();
+                      ->paginate(6);
 
         $html = view('pegawai.laporan._mitra-cards-index', compact('mitras'))->render();
+        $pagination = $mitras->links()->toHtml();
 
-        return response()->json(['html' => $html]);
+        return response()->json([
+            'html' => $html,
+            'pagination' => $pagination
+        ]);
     }
 
     public function laporanMitra(Mitra $mitra, Request $request)
     {
+        // Load mitra with all location relationships
+        $mitra->load(['kabupaten', 'kecamatan', 'desa']);
+
         $query = Laporan::where('mitra_id', $mitra->id);
 
         if ($request->filled('search')) {
@@ -345,7 +352,7 @@ class LaporanController extends Controller
 
         // Untuk filter/pencarian AJAX
         if ($request->ajax()) {
-            $view = view('pegawai.laporan._list', [
+            $view = view('components.laporan._list', [
                 'laporans' => $laporans,
                 'start_index' => $laporans->firstItem()
             ])->render();

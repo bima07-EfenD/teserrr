@@ -157,7 +157,6 @@ class WilayahSeeder extends Seeder
             'Blimbingsari' => ['Badean','Blimbingsari','Bomo','Gintangan','Kaligung','Kaotan','Karangrejo','Patoman','Sukojati','Watukebo'],
         ];
 
-        // Tambahkan desa dummy untuk kecamatan yang belum ada desa
         foreach ($mapLumajang as $kec => $obj) {
             if (!isset($desaLumajang[$kec])) {
                 Desa::create([

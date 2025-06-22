@@ -89,7 +89,7 @@
 
             <!-- Tabel Mitra -->
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div class="overflow-x-auto">
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -180,20 +180,6 @@
                                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </button>
-                                            <form action="{{ route('owner.mitra.destroy', $m->id) }}" method="POST"
-                                                class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900"
-                                                    onclick="return confirm('Apakah Anda yakin ingin menghapus mitra ini?')">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -206,6 +192,59 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+                 <!-- Mobile Card View -->
+                 <div class="md:hidden">
+                    <div class="p-4 space-y-4">
+                        @forelse($mitra as $m)
+                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ $m->nama_lengkap }}</h3>
+                                        <p class="text-sm text-gray-600">
+                                            Petani: {{ $m->user->name }}
+                                        </p>
+                                    </div>
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        @if ($m->status == 'disetujui') bg-green-100 text-green-800
+                                        @elseif($m->status == 'menunggu') bg-yellow-100 text-yellow-800
+                                        @elseif($m->status == 'nonaktif') bg-gray-100 text-gray-800
+                                        @else bg-red-100 text-red-800 @endif">
+                                        {{ ucfirst($m->status) }}
+                                    </span>
+                                </div>
+                                <div class="space-y-2 text-sm text-gray-700">
+                                    <p><span class="font-medium">Kabupaten:</span> {{ $m->kabupaten->nama }}</p>
+                                    <p><span class="font-medium">Luas Lahan:</span> {{ $m->luas_lahan ?? '-' }} m²</p>
+                                </div>
+                                <div class="border-t border-gray-200 mt-4 pt-3 flex items-center justify-end space-x-3">
+                                    <a href="{{ route('owner.mitra.show', $m->id) }}"
+                                        class="p-2 text-blue-600 hover:text-blue-900 transition-colors duration-200">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+                                    <button type="button"
+                                        onclick="openEditModal({{ $m->id }}, '{{ $m->nama_lengkap }}', '{{ $m->status }}')"
+                                        class="p-2 text-indigo-600 hover:text-indigo-900 transition-colors duration-200">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-8">
+                                <p class="text-gray-500">Tidak ada data mitra</p>
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
                 <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
                     {{ $mitra->links() }}

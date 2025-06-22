@@ -55,6 +55,18 @@
                                     placeholder="Cari berdasarkan nama, email, atau kabupaten...">
                             </div>
                         </div>
+                        <div class="w-full md:w-48">
+                            <label for="kabupatenFilter" class="block text-sm font-medium text-gray-700 mb-1">Kabupaten</label>
+                            <select name="kabupaten" id="kabupatenFilter"
+                                class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition">
+                                <option value="">Semua Kabupaten</option>
+                                @foreach ($kabupaten as $kab)
+                                    <option value="{{ $kab->id }}" {{ request('kabupaten') == $kab->id ? 'selected' : '' }}>
+                                        {{ $kab->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="flex gap-2">
                             <button type="submit"
                                 class="px-6 py-3 rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 font-medium shadow-md transition-all duration-200 flex items-center">
@@ -81,7 +93,8 @@
 
             <!-- Daftar Mitra -->
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-4">
-                <div class="overflow-x-auto">
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -171,6 +184,65 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Mobile Card View -->
+                <div class="md:hidden">
+                    <div class="p-4 space-y-4">
+                        @foreach ($mitras as $mitra)
+                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex-1">
+                                        <div class="flex items-center mb-2">
+                                            <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 font-semibold mr-3">
+                                                {{ strtoupper(substr($mitra->nama_lengkap, 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <h3 class="text-lg font-semibold text-gray-900">{{ $mitra->nama_lengkap }}</h3>
+                                                <p class="text-sm text-gray-600">{{ $mitra->email }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 text-sm text-gray-700">
+                                    <p><span class="font-medium">Luas Lahan:</span> {{ $mitra->luas_lahan }} m²</p>
+                                    <p><span class="font-medium">Kabupaten:</span> {{ $mitra->kabupaten->nama }}</p>
+                                    <p><span class="font-medium">Jumlah Pohon:</span> {{ $mitra->jumlah_pohon }}</p>
+                                    <p><span class="font-medium">Umur Pohon:</span>
+                                        @if($mitra->isUmurPohonSet())
+                                            <span class="text-green-600 font-medium">{{ round($mitra->umur_pohon_sekarang) }} hari</span>
+                                            <span class="text-gray-500 text-xs">(Input: {{ $mitra->tanggal_input_umur->format('d/m/Y') }})</span>
+                                        @else
+                                            <span class="text-red-600 font-medium">Belum diinput</span>
+                                        @endif
+                                    </p>
+                                </div>
+                                <div class="border-t border-gray-200 mt-4 pt-3 flex items-center justify-end space-x-3">
+                                    <a href="{{ route('pegawai.mitra.show', $mitra) }}"
+                                        class="p-2 text-blue-600 hover:text-blue-900 transition-colors duration-200"
+                                        title="Lihat Detail">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+                                    <button type="button"
+                                        class="p-2 text-indigo-600 hover:text-indigo-900 transition-colors duration-200 openEditJumlahPohonModal"
+                                        data-id="{{ $mitra->id }}" data-nama="{{ $mitra->nama_lengkap }}"
+                                        data-jumlah="{{ $mitra->jumlah_pohon }}" title="Edit Jumlah Pohon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
             <div class="mt-8" id="paginationContainer">
                 {{ $mitras->links() }}
@@ -216,28 +288,66 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');
+            const kabupatenFilter = document.getElementById('kabupatenFilter');
             const mitraList = document.getElementById('mitraList');
             const paginationContainer = document.getElementById('paginationContainer');
             let searchTimeout;
 
             function performSearch() {
                 const searchTerm = searchInput.value.trim();
-                fetch(`{{ route('pegawai.mitra.index') }}?search=${encodeURIComponent(searchTerm)}`, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        mitraList.innerHTML = data.html;
+                const kabupatenValue = kabupatenFilter.value;
+
+                // Show loading state
+                mitraList.innerHTML = `
+                    <div class="col-span-full">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                            <p class="mt-4 text-gray-600">Mencari mitra...</p>
+                        </div>
+                    </div>
+                `;
+
+                const params = new URLSearchParams();
+                if (searchTerm) params.append('search', searchTerm);
+                if (kabupatenValue) params.append('kabupaten', kabupatenValue);
+
+                fetch(`{{ route('pegawai.mitra.search') }}?${params.toString()}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    mitraList.innerHTML = data.html;
+                    if (data.pagination) {
                         paginationContainer.innerHTML = data.pagination;
-                    });
+                    } else {
+                        paginationContainer.innerHTML = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mitraList.innerHTML = `
+                        <div class="col-span-full">
+                            <div class="bg-white rounded-2xl shadow-lg p-6 text-center text-gray-500">
+                                Terjadi kesalahan saat melakukan pencarian
+                            </div>
+                        </div>
+                    `;
+                    paginationContainer.innerHTML = '';
+                });
             }
 
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
                     clearTimeout(searchTimeout);
                     searchTimeout = setTimeout(performSearch, 500);
+                });
+            }
+
+            if (kabupatenFilter) {
+                kabupatenFilter.addEventListener('change', function() {
+                    performSearch();
                 });
             }
 

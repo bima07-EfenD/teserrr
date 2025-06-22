@@ -7,12 +7,12 @@
     <form action="{{ route('owner.pegawai.update', $pegawai) }}" method="POST">
         @csrf
         @method('PUT')
-        
+
         <div class="px-4 py-5 bg-white sm:p-6">
             <div class="grid grid-cols-6 gap-6">
                 <div class="col-span-6 sm:col-span-3">
                     <label for="name" class="block text-sm font-medium text-gray-700">Nama</label>
-                    <input type="text" name="name" id="name" value="{{ old('name', $pegawai->name) }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md @error('name') border-red-300 @enderror">
+                    <input type="text" name="name" id="name" value="{{ old('name', $pegawai->name) }}" readonly class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-100 text-gray-500">
                     @error('name')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -20,7 +20,7 @@
 
                 <div class="col-span-6 sm:col-span-3">
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" name="email" id="email" value="{{ old('email', $pegawai->email) }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md @error('email') border-red-300 @enderror">
+                    <input type="email" name="email" id="email" value="{{ old('email', $pegawai->email) }}" readonly class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-100 text-gray-500">
                     @error('email')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -45,4 +45,4 @@
         </div>
     </form>
 </div>
-@endsection 
+@endsection

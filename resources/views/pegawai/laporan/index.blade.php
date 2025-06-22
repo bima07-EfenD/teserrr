@@ -119,7 +119,7 @@
                 </div>
                 <!-- Daftar Mitra -->
                 <div id="mitraList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @forelse($mitras->where('status', 'disetujui') as $mitra)
+                    @forelse($mitras as $mitra)
                         <a href="{{ route('pegawai.laporan.laporan-mitra', $mitra) }}"
                             class="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 overflow-hidden">
                             <div class="p-6">
@@ -178,6 +178,13 @@
                         </div>
                     @endforelse
                 </div>
+
+                <!-- Pagination untuk Mitra -->
+                @if($mitras->hasPages())
+                <div class="mt-8">
+                    {{ $mitras->links() }}
+                </div>
+                @endif
             @else
                 <!-- Filter dan Pencarian -->
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">

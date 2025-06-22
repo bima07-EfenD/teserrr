@@ -101,7 +101,7 @@
 
         <!-- Pagination -->
         <div class="mt-8" id="paginationContainer">
-            @if($mitras instanceof \Illuminate\Pagination\LengthAwarePaginator)
+            @if($mitras->hasPages())
                 {{ $mitras->links() }}
             @endif
         </div>

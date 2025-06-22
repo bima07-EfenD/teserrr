@@ -43,7 +43,7 @@ class LaporanController extends Controller
 
         $mitras = Mitra::where('user_id', $petaniId)
                       ->where('status', 'disetujui')
-                      ->get();
+                      ->paginate(6);
 
         return view('petani.laporan.index', compact('laporans', 'mitras', 'selectedMitra'));
     }
@@ -97,7 +97,7 @@ class LaporanController extends Controller
 
     public function selectMitra()
     {
-        $mitras = Mitra::where('status', 'disetujui')->get();
+        $mitras = Mitra::where('status', 'disetujui')->paginate(6);
         return view('petani.laporan.select-mitra', compact('mitras'));
     }
 
@@ -113,9 +113,13 @@ class LaporanController extends Controller
                         ->orWhere('telepon', 'like', "%$search%");
                 });
             })
-            ->get();
+            ->paginate(6);
         $view = view('petani.laporan._mitra-cards', compact('mitras'))->render();
-        return response()->json(['html' => $view]);
+        $pagination = $mitras->links()->toHtml();
+        return response()->json([
+            'html' => $view,
+            'pagination' => $pagination
+        ]);
     }
 
     public function searchMitraIndex(Request $request)
@@ -130,11 +134,15 @@ class LaporanController extends Controller
                                 $q->where('nama', 'like', '%' . $request->search . '%');
                             });
                       })
-                      ->get();
+                      ->paginate(6);
 
         $html = view('petani.laporan._mitra-cards-index', compact('mitras'))->render();
+        $pagination = $mitras->links()->toHtml();
 
-        return response()->json(['html' => $html]);
+        return response()->json([
+            'html' => $html,
+            'pagination' => $pagination
+        ]);
     }
 
     public function laporanMitra(Mitra $mitra, Request $request)
@@ -145,6 +153,9 @@ class LaporanController extends Controller
         if ($mitra->user_id !== $petaniId) {
             abort(403, 'Unauthorized action.');
         }
+
+        // Load mitra with all location relationships
+        $mitra->load(['kabupaten', 'kecamatan', 'desa']);
 
         $query = Laporan::where('mitra_id', $mitra->id);
 
@@ -162,7 +173,7 @@ class LaporanController extends Controller
             $query->whereYear('tanggal_laporan', $request->tahun);
         }
 
-        $laporans = $query->latest()->paginate(5);
+        $laporans = $query->latest()->paginate(6);
 
         // Untuk filter/pencarian AJAX
         if ($request->ajax()) {
