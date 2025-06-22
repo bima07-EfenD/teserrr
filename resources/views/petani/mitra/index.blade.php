@@ -44,103 +44,107 @@
                 </div>
             </div>
 
-            <!-- Form Pencarian -->
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-4">
-                <div class="p-6">
-                    <form id="filterForm" class="flex flex-col md:flex-row gap-4">
-                        <div class="flex-1">
-                            <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Cari Mitra</label>
-                            <div class="relative">
-                                <div
-                                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <input type="text" id="searchInput" name="search" value="{{ request('search') }}"
-                                    class="block w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition"
-                                    placeholder="Cari berdasarkan nama, email, atau kabupaten...">
-                            </div>
-                        </div>
-                        <div class="w-full md:w-48">
-                            <label for="kabupatenFilter"
-                                class="block text-sm font-medium text-gray-700 mb-1">Kabupaten</label>
-                            <select name="kabupaten" id="kabupatenFilter"
-                                class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition">
-                                <option value="">Semua Kabupaten</option>
-                                @foreach ($kabupatenList as $kabupaten)
-                                    <option value="{{ $kabupaten }}" @if (request('kabupaten') == $kabupaten) selected @endif>
-                                        {{ $kabupaten }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="w-full md:w-48">
-                            <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select name="status" id="statusFilter"
-                                class="block w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-blue-200 focus:ring-2 transition">
-                                <option value="">Semua Status</option>
-                                <option value="menunggu" @if (request('status') == 'menunggu') selected @endif>Menunggu</option>
-                                <option value="disetujui" @if (request('status') == 'disetujui') selected @endif>Disetujui
+            <!-- Filter dan Pencarian -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <form action="{{ route('petani.mitra.index') }}" method="GET"
+                    class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari</label>
+                        <input type="text" name="search" id="search" value="{{ request('search') }}"
+                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Cari nama atau email...">
+                    </div>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select name="status" id="status"
+                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Semua Status</option>
+                            <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>Menunggu
+                            </option>
+                            <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui
+                            </option>
+                            <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="kabupaten" class="block text-sm font-medium text-gray-700 mb-1">Kabupaten</label>
+                        <select name="kabupaten" id="kabupaten"
+                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Semua Kabupaten</option>
+                            @foreach ($kabupatenList as $kabupaten)
+                                <option value="{{ $kabupaten }}"
+                                    {{ request('kabupaten') == $kabupaten ? 'selected' : '' }}>
+                                    {{ $kabupaten }}
                                 </option>
-                                <option value="ditolak" @if (request('status') == 'ditolak') selected @endif>Ditolak</option>
-                            </select>
-                        </div>
-                        <div class="flex gap-2 w-full md:w-auto">
-                            <button type="submit"
-                                class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md transition-all duration-200 inline-flex items-center justify-center">
-                                Cari
-                            </button>
-                            <button type="reset"
-                                class="flex-1 bg-gray-100 text-gray-700 px-6 py-2 rounded-xl hover:bg-gray-200 inline-flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                Reset
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit"
+                            class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                            Cari
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <!-- Tabel Data -->
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-4">
-                <div class="overflow-x-auto">
+            <!-- Tabel Mitra -->
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    No</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Nama</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Luas Lahan</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Kabupaten</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Tanggal Daftar</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Aksi</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    No
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Nama
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Luas Lahan
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Kabupaten
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Tanggal Daftar
+                                </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Aksi
+                                </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200" id="mitraTableBody">
+                        <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($mitras as $index => $mitra)
                                 <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         {{ $mitras->firstItem() + $index }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="text-sm font-medium text-gray-900">{{ $mitra->nama_lengkap }}</div>
+                                            <div class="flex flex-col">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    {{ $mitra->nama_lengkap }}
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    {{ $mitra->user->name }}
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ number_format($mitra->luas_lahan) }}
-                                            m<sup>2</sup></div>
+                                        <div class="text-sm text-gray-900">{{ number_format($mitra->luas_lahan) }} m²</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $mitra->kabupaten->nama }}</div>
@@ -148,27 +152,28 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
                                             class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    @if ($mitra->status == 'menunggu') bg-yellow-100 text-yellow-800
-                                    @elseif($mitra->status == 'disetujui') bg-green-100 text-green-800
-                                    @else bg-red-100 text-red-800 @endif">
+                                            @if ($mitra->status == 'disetujui') bg-green-100 text-green-800
+                                            @elseif($mitra->status == 'menunggu') bg-yellow-100 text-yellow-800
+                                            @else bg-red-100 text-red-800 @endif">
                                             {{ ucfirst($mitra->status) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap ">
-                                        <div class="text-sm text-gray-500">{{ $mitra->created_at->format('d M Y') }}</div>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $mitra->created_at->format('d M Y') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="{{ route('petani.mitra.show', $mitra->id) }}"
-                                            class="text-blue-600 hover:text-blue-900 transition-colors duration-200 inline-flex items-center">
-                                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            Detail
-                                        </a>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                        <div class="flex items-center justify-end space-x-3">
+                                            <a href="{{ route('petani.mitra.show', $mitra->id) }}"
+                                                class="text-blue-600 hover:text-blue-900">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -181,11 +186,54 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-            <!-- Pagination -->
-            <div class="mt-4">
-                {{ $mitras->links() }}
+                <!-- Mobile Card View -->
+                <div class="md:hidden">
+                    <div class="p-4 space-y-4">
+                        @forelse($mitras as $index => $mitra)
+                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ $mitra->nama_lengkap }}</h3>
+                                        <p class="text-sm text-gray-600">
+                                            Petani: {{ $mitra->user->name }}
+                                        </p>
+                                    </div>
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        @if ($mitra->status == 'disetujui') bg-green-100 text-green-800
+                                        @elseif($mitra->status == 'menunggu') bg-yellow-100 text-yellow-800
+                                        @else bg-red-100 text-red-800 @endif">
+                                        {{ ucfirst($mitra->status) }}
+                                    </span>
+                                </div>
+                                <div class="space-y-2 text-sm text-gray-700">
+                                    <p><span class="font-medium">Luas Lahan:</span> {{ number_format($mitra->luas_lahan) }} m²</p>
+                                    <p><span class="font-medium">Kabupaten:</span> {{ $mitra->kabupaten->nama }}</p>
+                                    <p><span class="font-medium">Tanggal Daftar:</span> {{ $mitra->created_at->format('d M Y') }}</p>
+                                </div>
+                                <div class="border-t border-gray-200 mt-4 pt-3 flex items-center justify-end space-x-3">
+                                    <a href="{{ route('petani.mitra.show', $mitra->id) }}"
+                                        class="p-2 text-blue-600 hover:text-blue-900 transition-colors duration-200">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-8">
+                                <p class="text-gray-500">Tidak ada data mitra</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    {{ $mitras->links() }}
+                </div>
             </div>
         </div>
     </div>
@@ -201,69 +249,19 @@
                     icon: 'success',
                     title: 'Berhasil!',
                     text: '{{ session('success') }}',
-                    showConfirmButton: false,
-                    timer: 2000
+                    confirmButtonText: 'OK'
                 });
             @endif
 
-            // Cek jika ada error
-            @if ($errors->any())
+            // Cek jika ada session error
+            @if (session('error'))
                 Swal.fire({
                     icon: 'error',
-                    title: 'Oops...',
-                    text: 'Terjadi kesalahan saat memproses data!',
-                    footer: '<ul class="text-left">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>'
+                    title: 'Gagal!',
+                    text: '{{ session('error') }}',
+                    confirmButtonText: 'OK'
                 });
             @endif
-
-            document.addEventListener('DOMContentLoaded', function() {
-                const filterForm = document.getElementById('filterForm');
-                const searchInput = document.getElementById('searchInput');
-                const kabupatenFilter = document.getElementById('kabupatenFilter');
-                const statusFilter = document.getElementById('statusFilter');
-                const mitraTableBody = document.getElementById('mitraTableBody');
-
-                // Function to filter table rows
-                function filterTable() {
-                    const searchTerm = searchInput.value.toLowerCase();
-                    const kabupaten = kabupatenFilter.value.toLowerCase();
-                    const status = statusFilter.value.toLowerCase();
-
-                    const rows = mitraTableBody.getElementsByTagName('tr');
-
-                    Array.from(rows).forEach(row => {
-                        if (row.cells.length < 2) return; // Skip empty state row
-
-                        const nama = row.cells[1].textContent.toLowerCase();
-                        const email = row.cells[2].textContent.toLowerCase();
-                        const telepon = row.cells[3].textContent.toLowerCase();
-                        const rowKabupaten = row.cells[4].textContent.toLowerCase();
-                        const rowStatus = row.cells[5].textContent.toLowerCase();
-
-                        const matchesSearch = nama.includes(searchTerm) ||
-                            email.includes(searchTerm) ||
-                            telepon.includes(searchTerm);
-                        const matchesKabupaten = kabupaten === '' || rowKabupaten.includes(kabupaten);
-                        const matchesStatus = status === '' || rowStatus.includes(status);
-
-                        row.style.display = matchesSearch && matchesKabupaten && matchesStatus ? '' : 'none';
-                    });
-                }
-
-                // Event listeners
-                filterForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    filterTable();
-                });
-
-                filterForm.addEventListener('reset', function() {
-                    setTimeout(() => {
-                        Array.from(mitraTableBody.getElementsByTagName('tr')).forEach(row => {
-                            row.style.display = '';
-                        });
-                    }, 0);
-                });
-            });
         </script>
     @endpush
 @endsection

@@ -29,7 +29,10 @@ class DashboardController extends Controller
 
         // Statistik Laporan - hanya untuk pegawai yang login
         $totalLaporan = Laporan::where('pegawai_id', Auth::id())->count();
-        $laporanBulanIni = Laporan::where('pegawai_id', Auth::id())
+
+        // Panen Bulan Ini - hanya laporan dengan template "Panen Buah"
+        $panenBulanIni = Laporan::where('pegawai_id', Auth::id())
+            ->where('template', 'Panen Buah')
             ->whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->count();
@@ -45,7 +48,7 @@ class DashboardController extends Controller
             'totalMitra',
             'totalPohon',
             'totalLaporan',
-            'laporanBulanIni',
+            'panenBulanIni',
             'laporanTerbaru',
             'mitraPerKabupaten'
         ));
